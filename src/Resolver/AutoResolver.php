@@ -85,7 +85,7 @@ class AutoResolver extends Resolver
 
         // use a lazy-new-instance of the typehinted class?
         if ($rtype && $rtype->isInstantiable()) {
-            return new LazyNew($this, new Blueprint($rtype->name));
+            return new LazyNew(new Blueprint($rtype->name));
         }
 
         // $unified is still an UnresolvedParam

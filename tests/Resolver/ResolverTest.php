@@ -1,6 +1,9 @@
 <?php
 namespace Aura\Di\Resolver;
 
+use Aura\Di\Fake\FakeInterfaceClass1;
+use Aura\Di\Injection\Factory;
+use Aura\Di\Injection\InjectionFactory;
 use Aura\Di\Injection\Lazy;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
@@ -178,5 +181,51 @@ class ResolverTest extends TestCase
             'zim' => 'val1',
         ];
         $this->assertSame($expect, ['foo' => $actual->getFoo(), 'zim' => $actual->getZim()]);
+    }
+
+    public function testFromFactory()
+    {
+        $resolver = new Resolver(new Reflector());
+        $other = $resolver->resolve(new Blueprint('Aura\Di\Fake\FakeOtherClass'));
+
+        $factory = new Factory(
+            new Blueprint(
+                'Aura\Di\Fake\FakeChildClass',
+                [
+                    'foo' => 'foofoo',
+                    'zim' => $other,
+                ],
+                [
+                    'setFake' => 'fakefake',
+                ]
+            )
+        );
+
+        $actual = $factory($resolver);
+
+        $this->assertInstanceOf('Aura\Di\Fake\FakeChildClass', $actual);
+        $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $actual->getZim());
+        $this->assertSame('foofoo', $actual->getFoo());
+        $this->assertSame('fakefake', $actual->getFake());
+
+        // create another one, should not be the same
+        $extra = $factory($resolver);
+        $this->assertNotSame($actual, $extra);
+    }
+
+    public function testAttributes()
+    {
+        $fakeService = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeService->setFoo($fakeServiceGet);
+
+        $this->resolver->setService('fake.service', $fakeService);
+        $this->resolver->values['fake.value'] = 'value';
+
+        $actual = $this->resolver->resolve(new Blueprint('Aura\Di\Fake\FakeConstructAttributeClass'));
+        $this->assertSame($fakeService, $actual->getFakeService());
+        $this->assertSame($fakeServiceGet, $actual->getFakeServiceGet());
+        $this->assertInstanceOf('Aura\Di\Fake\FakeInterfaceClass2', $actual->getFakeInstance());
+        $this->assertSame('value', $actual->getString());
     }
 }

@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Resolver\Resolver;
+
 /**
  *
  * Returns the value of `include` when invoked (thereby including the file).
@@ -46,7 +48,7 @@ class LazyInclude implements LazyInterface
      * @return mixed The return from the included file, if any.
      *
      */
-    public function __invoke()
+    public function __invoke(Resolver $resolver)
     {
         return include $this->file;
     }

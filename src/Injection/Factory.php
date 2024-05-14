@@ -25,15 +25,6 @@ class Factory
 {
     /**
      *
-     * The Resolver.
-     *
-     * @var Resolver
-     *
-     */
-    protected $resolver;
-
-    /**
-     *
      * Override params for the class.
      *
      * @var Blueprint
@@ -54,15 +45,10 @@ class Factory
      *
      * Constructor.
      *
-     * @param Resolver $resolver A Resolver to provide class-creation specifics.
-     *
      * @param Blueprint $blueprint
      */
-    public function __construct(
-        Resolver $resolver,
-        Blueprint $blueprint
-    ) {
-        $this->resolver = $resolver;
+    public function __construct(Blueprint $blueprint)
+    {
         $this->blueprint = $blueprint;
     }
 
@@ -90,10 +76,10 @@ class Factory
      * @param array $params
      * @return object
      */
-    public function __invoke(...$params): object
+    public function __invoke(Resolver $resolver): object
     {
-        return $this->resolver->resolve(
-            $this->blueprint->withParams($params),
+        return $resolver->resolve(
+            $this->blueprint,
             $this->contextualBlueprints
         );
     }

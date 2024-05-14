@@ -43,8 +43,7 @@ class ContainerBuilder
      */
     public function newInstance(bool $autoResolve = false): Container
     {
-        $resolver = $this->newResolver($autoResolve);
-        return new Container(new InjectionFactory($resolver));
+        return new Container($this->newResolver($autoResolve));
     }
 
     /**

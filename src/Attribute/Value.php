@@ -11,14 +11,22 @@ declare(strict_types=1);
 namespace Aura\Di\Attribute;
 
 use Attribute;
+use Aura\Di\Injection\LazyInterface;
+use Aura\Di\Injection\LazyValue;
+use Aura\Di\Resolver\Resolver;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-class Value
+class Value implements InjectAttributeInterface
 {
     private string $name;
 
     public function __construct(string $name)
     {
         $this->name = $name;
+    }
+
+    public function apply(Resolver $resolver): LazyInterface
+    {
+        return new LazyValue($this->name);
     }
 }

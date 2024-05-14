@@ -80,11 +80,11 @@ final class Blueprint
      *
      * @return object
      */
-    public function __invoke(ReflectionClass $reflectedClass): object
+    public function __invoke(Resolver $resolver, ReflectionClass $reflectedClass): object
     {
         $object = $reflectedClass->newInstanceArgs(
             array_map(
-                function ($val) {
+                function ($val) use ($resolver) {
                     // is the param missing?
                     if ($val instanceof UnresolvedParam) {
                         throw Exception::missingParam($this->className, $val->getName());
@@ -92,7 +92,7 @@ final class Blueprint
 
                     // load lazy objects as we go
                     if ($val instanceof LazyInterface) {
-                        $val = $val();
+                        $val = $val($resolver);
                     }
 
                     return $val;
@@ -106,7 +106,7 @@ final class Blueprint
                 throw Exception::setterMethodNotFound($this->className, $method);
             }
             if ($value instanceof LazyInterface) {
-                $value = $value();
+                $value = $value($resolver);
             }
             $object->$method($value);
         }
@@ -114,7 +114,7 @@ final class Blueprint
         /** @var MutationInterface $mutation */
         foreach ($this->mutations as $mutation) {
             if ($mutation instanceof LazyInterface) {
-                $mutation = $mutation();
+                $mutation = $mutation($resolver);
             }
 
             if ($mutation instanceof MutationInterface === false) {

@@ -9,7 +9,9 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Resolver;
 
+use Aura\Di\Attribute\InjectAttributeInterface;
 use Aura\Di\Exception;
+use Aura\Di\Injection\LazyInterface;
 use ReflectionParameter;
 use function class_exists;
 use function get_parent_class;
@@ -43,6 +45,15 @@ class Resolver
      *
      */
     protected $reflector;
+
+    /**
+     *
+     * Retains named service definitions.
+     *
+     * @var array
+     *
+     */
+    protected $services = [];
 
     /**
      *
@@ -123,6 +134,55 @@ class Resolver
 
     /**
      *
+     * Sets a service definition by name.
+     *
+     * @param string $service The service key.
+     *
+     * @param object|callable $val The service object; or callable.
+     *
+     */
+    public function setService(string $service, object $val): void
+    {
+        $this->services[$service] = $val;
+    }
+
+    public function hasService(string $service): bool
+    {
+        return isset($this->services[$service]);
+    }
+
+    public function getServiceInstance(string $service): object
+    {
+        if (! isset($this->services[$service])) {
+            throw Exception::serviceNotFound($service);
+        }
+
+        // instantiate it from its definition
+        $instance = $this->services[$service];
+
+        // lazy-load as needed
+        if ($instance instanceof LazyInterface) {
+            $instance = $instance($this);
+        }
+
+        // done
+        return $instance;
+    }
+
+    /**
+     *
+     * Gets the list of service definitions.
+     *
+     * @return array
+     *
+     */
+    public function getServices(): array
+    {
+        return array_keys($this->services);
+    }
+
+    /**
+     *
      * Creates and returns a new instance of a class using reflection and
      * the configuration parameters, optionally with overrides, invoking Lazy
      * values along the way.
@@ -139,6 +199,7 @@ class Resolver
         if ($contextualBlueprints === []) {
             return call_user_func(
                 $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+                $this,
                 $this->reflector->getClass($blueprint->getClassName())
             );
         }
@@ -172,6 +233,7 @@ class Resolver
 
         $resolved = call_user_func(
             $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+            $this,
             $this->reflector->getClass($blueprint->getClassName())
         );
 
@@ -286,6 +348,14 @@ class Resolver
                  && ! $this->params[$class][$name] instanceof UnresolvedParam;
         if ($explicitNamed) {
             return $this->params[$class][$name];
+        }
+
+        foreach ($rparam->getAttributes() as $attribute) {
+            if (str_starts_with($attribute->getName(), 'Aura\\Di\\Attribute\\')) {
+                /** @var InjectAttributeInterface $attributeInstance */
+                $attributeInstance = $attribute->newInstance();
+                return $attributeInstance->apply($this);
+            }
         }
 
         // is there a named value implicitly inherited from the parent class?

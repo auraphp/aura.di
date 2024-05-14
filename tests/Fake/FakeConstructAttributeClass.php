@@ -10,7 +10,6 @@ class FakeConstructAttributeClass
     private FakeInterface $fakeService;
     private FakeInterface $fakeServiceGet;
     private FakeInterface $fakeInstance;
-    private FakeInterface $fakeSetter;
     private string $string;
 
     public function __construct(
@@ -18,7 +17,7 @@ class FakeConstructAttributeClass
         FakeInterface $fakeService,
         #[Service('fake.service', 'getFoo')]
         FakeInterface $fakeServiceGet,
-        #[Instance(FakeInterfaceClass1::class)]
+        #[Instance(FakeInterfaceClass2::class)]
         FakeInterface $fakeInstance,
         #[Value('fake.value')]
         string $string,
@@ -29,10 +28,23 @@ class FakeConstructAttributeClass
         $this->string = $string;
     }
 
-    public function setFake(
-        #[Service('fake.setter')]
-        FakeInterface $fakeSetter
-    ) {
-        $this->fakeSetter = $fakeSetter;
+    public function getFakeService(): FakeInterface
+    {
+        return $this->fakeService;
+    }
+
+    public function getFakeServiceGet(): FakeInterface
+    {
+        return $this->fakeServiceGet;
+    }
+
+    public function getFakeInstance(): FakeInterface
+    {
+        return $this->fakeInstance;
+    }
+
+    public function getString(): string
+    {
+        return $this->string;
     }
 }

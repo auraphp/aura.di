@@ -16,11 +16,11 @@ use Aura\Di\Injection\LazyArray;
 use Aura\Di\Injection\LazyCallable;
 use Aura\Di\Injection\LazyGet;
 use Aura\Di\Injection\LazyInclude;
-use Aura\Di\Injection\LazyInterface;
 use Aura\Di\Injection\LazyNew;
 use Aura\Di\Injection\LazyRequire;
 use Aura\Di\Injection\LazyValue;
 use Aura\Di\Resolver\Blueprint;
+use Aura\Di\Resolver\Resolver;
 use Closure;
 use Psr\Container\ContainerInterface;
 
@@ -73,15 +73,6 @@ class Container implements ContainerInterface
 
     /**
      *
-     * Retains named service definitions.
-     *
-     * @var array
-     *
-     */
-    protected $services = [];
-
-    /**
-     *
      * Retains the actual service object instances.
      *
      * @var array
@@ -115,11 +106,11 @@ class Container implements ContainerInterface
      *
      */
     public function __construct(
-        InjectionFactory $injectionFactory,
+        Resolver $resolver,
         ContainerInterface $delegateContainer = null
     ) {
-        $this->injectionFactory = $injectionFactory;
-        $this->resolver = $this->injectionFactory->getResolver();
+        $this->injectionFactory = new InjectionFactory();
+        $this->resolver = $resolver;
         $this->delegateContainer = $delegateContainer;
     }
 
@@ -202,7 +193,7 @@ class Container implements ContainerInterface
      */
     public function has($service): bool
     {
-        if (isset($this->services[$service])) {
+        if ($this->resolver->hasService($service)) {
             return true;
         }
 
@@ -244,7 +235,7 @@ class Container implements ContainerInterface
             $val = $this->injectionFactory->newLazy($val);
         }
 
-        $this->services[$service] = $val;
+        $this->resolver->setService($service, $val);
 
         return $this;
     }
@@ -293,21 +284,12 @@ class Container implements ContainerInterface
         }
 
         // is it defined in this container?
-        if (! isset($this->services[$service])) {
+        if (!$this->resolver->hasService($service)) {
             // no, get the instance from the delegate container
             return $this->delegateContainer->get($service);
         }
 
-        // instantiate it from its definition
-        $instance = $this->services[$service];
-
-        // lazy-load as needed
-        if ($instance instanceof LazyInterface) {
-            $instance = $instance();
-        }
-
-        // done
-        return $instance;
+        return $this->resolver->getServiceInstance($service);
     }
 
     /**
@@ -331,7 +313,7 @@ class Container implements ContainerInterface
      */
     public function getServices(): array
     {
-        return array_keys($this->services);
+        return $this->resolver->getServices();
     }
 
     /**
@@ -534,7 +516,7 @@ class Container implements ContainerInterface
     ): object
     {
         $this->locked = true;
-        return $this->injectionFactory->newInstance(
+        return $this->resolver->resolve(
             new Blueprint(
                 $class,
                 $mergeParams,

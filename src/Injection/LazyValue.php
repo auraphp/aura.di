@@ -22,15 +22,6 @@ class LazyValue implements LazyInterface
 {
     /**
      *
-     * The Resolver that holds the values.
-     *
-     * @var Resolver
-     *
-     */
-    protected $resolver;
-
-    /**
-     *
      * The value key to retrieve.
      *
      * @var string
@@ -47,9 +38,8 @@ class LazyValue implements LazyInterface
      * @param string $key The value key to retrieve.
      *
      */
-    public function __construct(Resolver $resolver, string $key)
+    public function __construct(string $key)
     {
-        $this->resolver = $resolver;
         $this->key = $key;
     }
 
@@ -60,16 +50,16 @@ class LazyValue implements LazyInterface
      * @return mixed
      *
      */
-    public function __invoke()
+    public function __invoke(Resolver $resolver)
     {
-        if (!isset($this->resolver->values[$this->key])) {
+        if (!isset($resolver->values[$this->key])) {
             throw new \InvalidArgumentException('Unknown key (' . $this->key . ') in container value');
         }
 
-        $value = $this->resolver->values[$this->key];
+        $value = $resolver->values[$this->key];
         // convert Lazy objects
         if ($value instanceof LazyInterface) {
-            $value = $value();
+            $value = $value($resolver);
         }
         return $value;
     }

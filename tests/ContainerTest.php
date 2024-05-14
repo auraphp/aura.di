@@ -16,6 +16,10 @@ use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 class ContainerTest extends TestCase
 {
     /**
+     * @var Resolver|MockObject
+     */
+    protected $resolver;
+    /**
      * @var Container|MockObject
      */
     protected $container;
@@ -23,8 +27,8 @@ class ContainerTest extends TestCase
     protected function set_up()
     {
         parent::set_up();
-        $builder = new ContainerBuilder;
-        $this->container = $builder->newInstance();
+        $this->resolver = new Resolver(new Reflector());
+        $this->container = new Container($this->resolver);
     }
 
     protected function tearDown(): void
@@ -118,7 +122,7 @@ class ContainerTest extends TestCase
 
         $this->assertInstanceOf('Aura\Di\Injection\LazyGet', $lazy);
 
-        $foo = $lazy();
+        $foo = $lazy($this->resolver);
 
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $foo);
     }
@@ -169,7 +173,7 @@ class ContainerTest extends TestCase
     {
         $lazy = $this->container->lazyNew('Aura\Di\Fake\FakeOtherClass');
         $this->assertInstanceOf('Aura\Di\Injection\LazyNew', $lazy);
-        $foo = $lazy();
+        $foo = $lazy($this->resolver);
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $foo);
     }
 
@@ -185,7 +189,7 @@ class ContainerTest extends TestCase
             'Aura\Di\Fake\FakeVariadic',
             ['foo' => $foo, 'items' => $items]
         );
-        $instance = $lazy();
+        $instance = $lazy($this->resolver);
         $this->assertSame($foo, $instance->getFoo());
         $this->assertSame($items, $instance->getItems());
     }
@@ -209,7 +213,7 @@ class ContainerTest extends TestCase
         $file = __DIR__ . DIRECTORY_SEPARATOR . 'lazy_array.php';
         $lazy = $this->container->lazyInclude($file);
         $this->assertInstanceOf('Aura\Di\Injection\LazyInclude', $lazy);
-        $actual = $lazy();
+        $actual = $lazy($this->resolver);
         $expect = ['foo' => 'bar'];
         $this->assertSame($expect, $actual);
     }
@@ -219,7 +223,7 @@ class ContainerTest extends TestCase
         $file = __DIR__ . DIRECTORY_SEPARATOR . 'lazy_array.php';
         $lazy = $this->container->lazyRequire($file);
         $this->assertInstanceOf('Aura\Di\Injection\LazyRequire', $lazy);
-        $actual = $lazy();
+        $actual = $lazy($this->resolver);
         $expect = ['foo' => 'bar'];
         $this->assertSame($expect, $actual);
     }
@@ -232,7 +236,7 @@ class ContainerTest extends TestCase
         );
 
         $this->assertInstanceOf('Aura\Di\Injection\Lazy', $lazy);
-        $meldingResult = $lazy();
+        $meldingResult = $lazy($this->resolver);
         $this->assertInstanceOf('Aura\Di\Fake\FakeMalleableClass', $meldingResult);
 
         $actual = $meldingResult->getFoo();
@@ -248,7 +252,7 @@ class ContainerTest extends TestCase
         );
 
         $this->assertInstanceOf('Aura\Di\Injection\Lazy', $lazy);
-        $actual = $lazy();
+        $actual = $lazy($this->resolver);
         $expect = 'foo';
         $this->assertSame($expect, $actual);
     }
@@ -260,7 +264,7 @@ class ContainerTest extends TestCase
         ]);
 
         $this->assertInstanceOf('Aura\Di\Injection\LazyArray', $lazyArray);
-        $actual = $lazyArray();
+        $actual = $lazyArray($this->resolver);
         $this->assertIsArray($actual);
         $this->assertArrayHasKey(0, $actual);
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $actual[0]);
@@ -271,7 +275,7 @@ class ContainerTest extends TestCase
         $lazyArray = $this->container->lazyArray([]);
         $lazyArray->append($this->container->lazyNew('Aura\Di\Fake\FakeOtherClass'));
 
-        $actual = $lazyArray();
+        $actual = $lazyArray($this->resolver);
         $this->assertIsArray($actual);
         $this->assertArrayHasKey(0, $actual);
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $actual[0]);
@@ -282,7 +286,7 @@ class ContainerTest extends TestCase
         $lazyArray = $this->container->lazyArray([]);
         $lazyArray['fake'] = $this->container->lazyNew('Aura\Di\Fake\FakeOtherClass');
 
-        $actual = $lazyArray();
+        $actual = $lazyArray($this->resolver);
         $this->assertIsArray($actual);
         $this->assertArrayHasKey('fake', $actual);
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $actual['fake']);
@@ -303,7 +307,7 @@ class ContainerTest extends TestCase
     {
         $lazyCallable = $this->container->lazyCallable($this->container->lazyNew('Aura\Di\Fake\FakeInvokableClass'));
         $callableRunner = function(callable $callable) {
-            return $callable('baz');
+            return $callable($this->resolver, 'baz');
         };
 
         $this->assertInstanceOf('Aura\Di\Injection\LazyCallable', $lazyCallable);
@@ -317,7 +321,7 @@ class ContainerTest extends TestCase
         $this->container->set('invokable_class', $this->container->lazyNew('Aura\Di\Fake\FakeInvokableClass', array('foo' => 'foo')));
         $lazyCallable = $this->container->lazyCallable([$this->container->lazyGet('invokable_class'), '__invoke']);
         $callableRunner = function(callable $callable) {
-            return $callable('bar');
+            return $callable($this->resolver, 'bar');
         };
 
         $this->assertInstanceOf('Aura\Di\Injection\LazyCallable', $lazyCallable);
@@ -336,7 +340,7 @@ class ContainerTest extends TestCase
         $lazy = $this->container->lazyGetCall('fake', 'mirror', 'foo');
 
         $this->assertInstanceOf('Aura\Di\Injection\Lazy', $lazy);
-        $actual = $lazy();
+        $actual = $lazy($this->resolver);
         $expect = 'foo';
         $this->assertSame($expect, $actual);
     }
@@ -356,7 +360,7 @@ class ContainerTest extends TestCase
             ]
         );
 
-        $actual = $factory();
+        $actual = $factory($this->resolver);
 
         $this->assertInstanceOf('Aura\Di\Fake\FakeChildClass', $actual);
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $actual->getZim());
@@ -365,7 +369,7 @@ class ContainerTest extends TestCase
 
 
         // create another one, should not be the same
-        $extra = $factory();
+        $extra = $factory($this->resolver);
         $this->assertNotSame($actual, $extra);
     }
 
@@ -565,13 +569,13 @@ class ContainerTest extends TestCase
             }
         ]);
 
-        $auraContainer = new Container(new InjectionFactory(new Resolver(new Reflector())), $delegateContainer);
+        $auraContainer = new Container(new Resolver(new Reflector()), $delegateContainer);
 
         $lazy = $auraContainer->lazyGet('foo');
 
         $this->assertInstanceOf('Aura\Di\Injection\LazyGet', $lazy);
 
-        $foo = $lazy();
+        $foo = $lazy($this->resolver);
 
         $this->assertInstanceOf('stdClass', $foo);
         $this->assertEquals('bar', $foo->foo);
@@ -587,7 +591,7 @@ class ContainerTest extends TestCase
         // 'service2' (in Picotainer) that references
         // 'service3' (in Aura again)
         $compositeContainer = new CompositeContainer();
-        $auraContainer = new Container(new InjectionFactory(new Resolver(new Reflector())), $compositeContainer);
+        $auraContainer = new Container(new Resolver(new Reflector()), $compositeContainer);
         $auraContainer->params['Aura\Di\Fake\FakeParentClass']['foo'] = $auraContainer->lazyGet('service2');
 
         // Let's declare service 1
@@ -618,7 +622,7 @@ class ContainerTest extends TestCase
 
     public function testContainerNamedParameterCanBeNull()
     {
-        $container = new Container(new InjectionFactory(new Resolver(new Reflector())));
+        $container = new Container(new Resolver(new Reflector()));
 
         $container->params['Aura\Di\Fake\FakeNullConstruct']['foo'] = null;
         $container->set('Foo', $container->lazyNew('Aura\Di\Fake\FakeNullConstruct'));
@@ -634,7 +638,7 @@ class ContainerTest extends TestCase
 
     public function testContainerNumberedParameterCanBeNull()
     {
-        $container = new Container(new InjectionFactory(new Resolver(new Reflector())));
+        $container = new Container(new Resolver(new Reflector()));
 
         $container->params['Aura\Di\Fake\FakeNullConstruct'][] = null;
         $container->set('Foo', $container->lazyNew('Aura\Di\Fake\FakeNullConstruct'));
@@ -650,7 +654,7 @@ class ContainerTest extends TestCase
 
     public function testContainerImplicitParentParametersCanBeNull()
     {
-        $container = new Container(new InjectionFactory(new Resolver(new Reflector())));
+        $container = new Container(new Resolver(new Reflector()));
 
         $container->params['Aura\Di\Fake\FakeNullConstruct'][] = null;
         $container->set('Foo', $container->lazyNew('Aura\Di\Fake\FakeNullConstruct'));
@@ -667,7 +671,7 @@ class ContainerTest extends TestCase
 
     public function testContainerDefaultParamsForChildClass()
     {
-        $container = new Container(new InjectionFactory(new Resolver(new Reflector())));
+        $container = new Container(new Resolver(new Reflector()));
 
         $actual = $container->newInstance('Aura\Di\Fake\FakeClassWithDefaultParam');
 
@@ -686,14 +690,14 @@ class ContainerTest extends TestCase
         $this->container->params['Aura\Di\Fake\FakeClassNeedsContextC']['fake'] = '1';
 
         $lazy = $this->container->lazyNew('Aura\Di\Fake\FakeClassNeedsContextC');
-        $this->assertSame('1', $lazy()->fake);
+        $this->assertSame('1', $lazy($this->resolver)->fake);
 
         $lazy = $this->container->lazyNew('Aura\Di\Fake\FakeClassNeedsContextA')
             ->withContext(new Blueprint('Aura\Di\Fake\FakeClassNeedsContextC', ['fake' => '2']));
 
-        $this->assertSame('2', $lazy()->fake->fake->fake);
+        $this->assertSame('2', $lazy($this->resolver)->fake->fake->fake);
 
         $lazy = $this->container->lazyNew('Aura\Di\Fake\FakeClassNeedsContextC');
-        $this->assertSame('1', $lazy()->fake);
+        $this->assertSame('1', $lazy($this->resolver)->fake);
     }
 }

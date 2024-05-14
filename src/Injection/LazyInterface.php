@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Resolver\Resolver;
+
 /**
  *
  * Indicates a Lazy to be invoked when resolving params and setters.
@@ -25,5 +27,5 @@ interface LazyInterface
      * @return mixed
      *
      */
-    public function __invoke();
+    public function __invoke(Resolver $resolver);
 }

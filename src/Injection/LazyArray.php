@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Aura\Di\Injection;
 
 use ArrayObject;
+use Aura\Di\Resolver\Resolver;
 
 /**
  *
@@ -28,12 +29,12 @@ class LazyArray extends ArrayObject implements LazyInterface
      * @return array The array of potentially invoked items.
      *
      */
-    public function __invoke()
+    public function __invoke(Resolver $resolver)
     {
         // convert Lazy objects in the callables
         foreach ($this as $key => $val) {
             if ($val instanceof LazyInterface) {
-                $this[$key] = $val();
+                $this[$key] = $val($resolver);
             }
         }
 

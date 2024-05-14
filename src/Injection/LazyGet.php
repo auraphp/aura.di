@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Exception\ServiceNotFound;
+use Aura\Di\Resolver\Resolver;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -22,21 +24,21 @@ class LazyGet implements LazyInterface
 {
     /**
      *
-     * The service container.
-     *
-     * @var ContainerInterface
-     *
-     */
-    protected $container;
-
-    /**
-     *
      * The service name to retrieve.
      *
      * @var string
      *
      */
     protected $service;
+
+    /**
+     *
+     * If applicable a delegated container
+     *
+     * @var ?ContainerInterface
+     *
+     */
+    private ?ContainerInterface $delegatedContainer = null;
 
     /**
      *
@@ -47,10 +49,10 @@ class LazyGet implements LazyInterface
      * @param string $service The service to retrieve.
      *
      */
-    public function __construct(ContainerInterface $container, $service)
+    public function __construct(string $service, ?ContainerInterface $delegatedContainer = null)
     {
-        $this->container = $container;
         $this->service = $service;
+        $this->delegatedContainer = $delegatedContainer;
     }
 
     /**
@@ -60,8 +62,16 @@ class LazyGet implements LazyInterface
      * @return object The object created by the closure.
      *
      */
-    public function __invoke(): object
+    public function __invoke(Resolver $resolver): object
     {
-        return $this->container->get($this->service);
+        try {
+            return $resolver->getServiceInstance($this->service);
+        } catch (ServiceNotFound $e) {
+            if ($this->delegatedContainer?->has($this->service)) {
+                return $this->delegatedContainer->get($this->service);
+            }
+
+            throw $e;
+        }
     }
 }

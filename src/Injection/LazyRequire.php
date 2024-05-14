@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Resolver\Resolver;
+
 /**
  *
  * Returns the value of `require` when invoked (thereby requiring the file).
@@ -46,7 +48,7 @@ class LazyRequire implements LazyInterface
      * @return mixed The return from the required file, if any.
      *
      */
-    public function __invoke()
+    public function __invoke(Resolver $resolver)
     {
         return require $this->file;
     }

@@ -28,7 +28,6 @@ class AutoResolverTest extends ResolverTest
     public function testAutoResolveExplicit()
     {
         $this->resolver->types['Aura\Di\Fake\FakeParentClass'] = new LazyNew(
-            $this->resolver,
             new Blueprint('Aura\Di\Fake\FakeChildClass')
         );
 
@@ -44,7 +43,7 @@ class AutoResolverTest extends ResolverTest
 
     public function testContainerConstructorWithDefaultParamAndTypedInjection()
     {
-        $container = new Container(new InjectionFactory(new AutoResolver(new Reflector())));
+        $container = new Container(new AutoResolver(new Reflector()));
         $container->types['Aura\Di\Fake\FakeInterfaceClass'] = new FakeInterfaceClass();
         $actual = $container->newInstance('Aura\Di\Fake\FakeClassWithDefaultParamInConstructor');
         $this->assertInstanceOf('Aura\Di\Fake\FakeInterfaceClass', $actual->fake);
@@ -52,7 +51,7 @@ class AutoResolverTest extends ResolverTest
 
     public function testContainerConstructorWithDefaultParamAndNoTypedInjection()
     {
-        $container = new Container(new InjectionFactory(new AutoResolver(new Reflector())));
+        $container = new Container(new AutoResolver(new Reflector()));
         $actual = $container->newInstance('Aura\Di\Fake\FakeClassWithDefaultParamInConstructor');
         $this->assertNull($actual->fake);
     }

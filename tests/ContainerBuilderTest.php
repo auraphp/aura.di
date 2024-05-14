@@ -17,14 +17,6 @@ class ContainerBuilderTest extends TestCase
         $this->builder = new ContainerBuilder();
     }
 
-    public function testAutoResolverInstance()
-    {
-        $builder = new ContainerBuilder();
-        $container = $builder->newInstance(ContainerBuilder::AUTO_RESOLVE);
-        $resolver = $container->getInjectionFactory()->getResolver();
-        $this->assertInstanceOf('Aura\Di\Resolver\AutoResolver', $resolver);
-    }
-
     public function testNewConfiguredInstance()
     {
         $config_classes = [

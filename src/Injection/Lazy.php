@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Resolver\Resolver;
+
 /**
  *
  * Returns the value of a callable when invoked (thereby invoking the callable).
@@ -58,23 +60,23 @@ class Lazy implements LazyInterface
      * @return object The object created by the closure.
      *
      */
-    public function __invoke()
+    public function __invoke(Resolver $resolver)
     {
         // convert Lazy objects in the callable
         if (is_array($this->callable)) {
             foreach ($this->callable as $key => $val) {
                 if ($val instanceof LazyInterface) {
-                    $this->callable[$key] = $val();
+                    $this->callable[$key] = $val($resolver);
                 }
             }
         } elseif ($this->callable instanceof LazyInterface) {
-            $this->callable = $this->callable->__invoke();
+            $this->callable = $this->callable->__invoke($resolver);
         }
 
         // convert Lazy objects in the params
         foreach ($this->params as $key => $val) {
             if ($val instanceof LazyInterface) {
-                $this->params[$key] = $val();
+                $this->params[$key] = $val($resolver);
             }
         }
 

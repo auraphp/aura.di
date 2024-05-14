@@ -9,8 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Container;
 use Aura\Di\Resolver\Blueprint;
-use Aura\Di\Resolver\Resolver;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -22,53 +22,6 @@ use Psr\Container\ContainerInterface;
  */
 class InjectionFactory
 {
-    /**
-     *
-     * A Resolver to provide class-creation specifics.
-     *
-     * @var Resolver
-     *
-     */
-    protected $resolver;
-
-    /**
-     *
-     * Constructor.
-     *
-     * @param Resolver $resolver A Resolver to provide class-creation specifics.
-     *
-     */
-    public function __construct(Resolver $resolver)
-    {
-        $this->resolver = $resolver;
-    }
-
-    /**
-     *
-     * Returns the Resolver.
-     *
-     * @return Resolver
-     *
-     */
-    public function getResolver(): Resolver
-    {
-        return $this->resolver;
-    }
-
-    /**
-     *
-     * Returns a new class instance.
-     *
-     * @param Blueprint $blueprint The blueprint to instantiate.
-     *
-     * @return object
-     *
-     */
-    public function newInstance(Blueprint $blueprint): object
-    {
-        return $this->resolver->resolve($blueprint);
-    }
-
     /**
      *
      * Returns a new Factory.
@@ -88,7 +41,7 @@ class InjectionFactory
         array $setters = []
     ): Factory
     {
-        return new Factory($this->resolver, new Blueprint($class, $params, $setters));
+        return new Factory(new Blueprint($class, $params, $setters));
     }
 
     /**
@@ -146,9 +99,9 @@ class InjectionFactory
      * @return LazyGet
      *
      */
-    public function newLazyGet(ContainerInterface $container, string $service): LazyGet
+    public function newLazyGet(Container $container, string $service): LazyGet
     {
-        return new LazyGet($container, $service);
+        return new LazyGet($service, $container->getDelegateContainer());
     }
 
     /**
@@ -184,7 +137,7 @@ class InjectionFactory
         array $setters = []
     ): LazyNew
     {
-        return new LazyNew($this->resolver, new Blueprint($class, $params, $setters));
+        return new LazyNew(new Blueprint($class, $params, $setters));
     }
 
     /**
@@ -212,6 +165,6 @@ class InjectionFactory
      */
     public function newLazyValue(string $key): LazyValue
     {
-        return new LazyValue($this->resolver, $key);
+        return new LazyValue($key);
     }
 }
