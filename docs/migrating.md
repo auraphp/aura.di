@@ -18,10 +18,10 @@ new Container(new InjectionFactory(new Resolver(new Reflector())));
 new Container(new Resolver(new Reflector()));
 ```
 
-### Object interface changes
+### API changes
 
-There a few API changes in the objects. They probably do not have consequences for  client libraries as they were not
-exposed classes.
+There a few API changes in the objects. They probably do not have consequences for client libraries as they were not
+exposed publicly, but the changes are listed below nonetheless.
 
 - The `InjectionFactory` now has no dependencies. The `Resolver` is not injected anymore and the `getResolver()` and `newInstance()` methods have been removed.
 - The `LazyInterface` now requires a `Resolver` to be passed to `__invoke`. Its implementations therefore also have different constructor signatures.
