@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+- (ADD) Inject via attributes
+- (CHG) Dropped PHP 7
+- (CHG) Container constructor now requires a Resolver
+- (CHG) Container constructor does not require a InjectionFactory anymore
+- (CHG) LazyInterface now expects a Resolver when __invoke gets called
+- (CHG) Resolver now holds the service instances
+
+
 ## 4.2.1
 
 - (CHG) Allow both v1 and v2 of psr/container
