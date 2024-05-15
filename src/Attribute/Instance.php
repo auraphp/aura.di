@@ -16,7 +16,7 @@ use Aura\Di\Injection\LazyNew;
 use Aura\Di\Resolver\Blueprint;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-class Instance implements InjectAttributeInterface
+class Instance implements AnnotatedInjectInterface
 {
     private string $name;
 

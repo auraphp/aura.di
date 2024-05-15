@@ -12,7 +12,7 @@ namespace Aura\Di\Attribute;
 
 use Aura\Di\Injection\LazyInterface;
 
-interface InjectAttributeInterface
+interface AnnotatedInjectInterface
 {
     public function inject(): LazyInterface;
 }

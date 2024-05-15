@@ -15,7 +15,7 @@ use Aura\Di\Injection\LazyInterface;
 use Aura\Di\Injection\LazyValue;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-class Value implements InjectAttributeInterface
+class Value implements AnnotatedInjectInterface
 {
     private string $name;
 

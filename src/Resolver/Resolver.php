@@ -9,7 +9,7 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Resolver;
 
-use Aura\Di\Attribute\InjectAttributeInterface;
+use Aura\Di\Attribute\AnnotatedInjectInterface;
 use Aura\Di\Exception;
 use Aura\Di\Injection\LazyInterface;
 use ReflectionParameter;
@@ -350,8 +350,8 @@ class Resolver
             return $this->params[$class][$name];
         }
 
-        foreach ($rparam->getAttributes(InjectAttributeInterface::class, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
-            /** @var InjectAttributeInterface $attributeInstance */
+        foreach ($rparam->getAttributes(AnnotatedInjectInterface::class, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            /** @var AnnotatedInjectInterface $attributeInstance */
             $attributeInstance = $attribute->newInstance();
             return $attributeInstance->inject();
         }
