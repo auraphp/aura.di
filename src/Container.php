@@ -50,26 +50,26 @@ class Container implements ContainerInterface
      * @var InjectionFactory
      *
      */
-    protected $injectionFactory;
+    protected InjectionFactory $injectionFactory;
 
     /**
      *
      * A container that will be used instead of the main container
      * to fetch dependencies.
      *
-     * @var ContainerInterface
+     * @var ?ContainerInterface
      *
      */
-    protected $delegateContainer;
+    protected ?ContainerInterface $delegateContainer;
 
     /**
      *
      * A Resolver obtained from the InjectionFactory.
      *
-     * @var Resolver\Resolver
+     * @var Resolver
      *
      */
-    protected $resolver;
+    protected Resolver $resolver;
 
     /**
      *
@@ -78,7 +78,7 @@ class Container implements ContainerInterface
      * @var array
      *
      */
-    protected $instances = [];
+    protected array $instances = [];
 
     /**
      *
@@ -92,22 +92,18 @@ class Container implements ContainerInterface
      * @see set()
      *
      */
-    protected $locked = false;
+    protected bool $locked = false;
 
     /**
+     * @param Resolver $resolver Resolves new objects based on its Blueprint.
      *
-     * Constructor.
-     *
-     * @param InjectionFactory $injectionFactory A factory to create objects and
-     * values for injection.
-     *
-     * @param ContainerInterface $delegateContainer An optional container
+     * @param ?ContainerInterface $delegateContainer An optional container
      * that will be used to fetch dependencies (i.e. lazy gets)
      *
      */
     public function __construct(
         Resolver $resolver,
-        ContainerInterface $delegateContainer = null
+        ?ContainerInterface $delegateContainer = null
     ) {
         $this->injectionFactory = new InjectionFactory();
         $this->resolver = $resolver;
@@ -125,7 +121,7 @@ class Container implements ContainerInterface
      * @throws Exception\ContainerLocked
      *
      */
-    public function &__get($key): array
+    public function &__get(string $key): array
     {
         if ($this->locked) {
             throw Exception::containerLocked();
@@ -141,19 +137,19 @@ class Container implements ContainerInterface
      * @return InjectionFactory
      *
      */
-    public function getInjectionFactory()
+    public function getInjectionFactory(): InjectionFactory
     {
         return $this->injectionFactory;
     }
 
     /**
      *
-     * Returns the secondary delegate container.
+     * Returns the secondary delegate container, if applicable.
      *
-     * @return mixed
+     * @return ?ContainerInterface
      *
      */
-    public function getDelegateContainer()
+    public function getDelegateContainer(): ?ContainerInterface
     {
         return $this->delegateContainer;
     }
@@ -186,19 +182,19 @@ class Container implements ContainerInterface
      *
      * Does a particular service definition exist?
      *
-     * @param string $service The service key to look up.
+     * @param string $id The service key to look up.
      *
      * @return bool
      *
      */
-    public function has($service): bool
+    public function has(string $id): bool
     {
-        if ($this->resolver->hasService($service)) {
+        if ($this->resolver->hasService($id)) {
             return true;
         }
 
         return isset($this->delegateContainer)
-            && $this->delegateContainer->has($service);
+            && $this->delegateContainer->has($id);
     }
 
     /**
@@ -221,7 +217,7 @@ class Container implements ContainerInterface
      * @return $this
      *
      */
-    public function set(string $service, object $val): Container
+    public function set(string $service, object|callable $val): Container
     {
         if ($this->locked) {
             throw Exception::containerLocked();
@@ -244,7 +240,7 @@ class Container implements ContainerInterface
      *
      * Gets a service object by key.
      *
-     * @param string $service The service to get.
+     * @param string $id The service to get.
      *
      * @return object
      *
@@ -252,16 +248,16 @@ class Container implements ContainerInterface
      * does not exist.
      *
      */
-    public function get($service): object
+    public function get(string $id): object
     {
         $this->locked = true;
 
-        if (isset($this->instances[$service])) {
-            return $this->instances[$service];
+        if (isset($this->instances[$id])) {
+            return $this->instances[$id];
         }
 
-        $this->instances[$service] = $this->getServiceInstance($service);
-        return $this->instances[$service];
+        $this->instances[$id] = $this->getServiceInstance($id);
+        return $this->instances[$id];
     }
 
     /**
