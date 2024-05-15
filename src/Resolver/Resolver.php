@@ -350,12 +350,10 @@ class Resolver
             return $this->params[$class][$name];
         }
 
-        foreach ($rparam->getAttributes() as $attribute) {
-            if (str_starts_with($attribute->getName(), 'Aura\\Di\\Attribute\\')) {
-                /** @var InjectAttributeInterface $attributeInstance */
-                $attributeInstance = $attribute->newInstance();
-                return $attributeInstance->apply($this);
-            }
+        foreach ($rparam->getAttributes(InjectAttributeInterface::class, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            /** @var InjectAttributeInterface $attributeInstance */
+            $attributeInstance = $attribute->newInstance();
+            return $attributeInstance->inject();
         }
 
         // is there a named value implicitly inherited from the parent class?

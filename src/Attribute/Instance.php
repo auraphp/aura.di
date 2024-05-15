@@ -14,7 +14,6 @@ use Attribute;
 use Aura\Di\Injection\LazyInterface;
 use Aura\Di\Injection\LazyNew;
 use Aura\Di\Resolver\Blueprint;
-use Aura\Di\Resolver\Resolver;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Instance implements InjectAttributeInterface
@@ -26,7 +25,7 @@ class Instance implements InjectAttributeInterface
         $this->name = $name;
     }
 
-    public function apply(Resolver $resolver): LazyInterface
+    public function inject(): LazyInterface
     {
         return new LazyNew(new Blueprint($this->name));
     }

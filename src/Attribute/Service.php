@@ -14,7 +14,6 @@ use Attribute;
 use Aura\Di\Injection\Lazy;
 use Aura\Di\Injection\LazyGet;
 use Aura\Di\Injection\LazyInterface;
-use Aura\Di\Resolver\Resolver;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Service implements InjectAttributeInterface
@@ -28,7 +27,7 @@ class Service implements InjectAttributeInterface
         $this->methodName = $methodName;
     }
 
-    public function apply(Resolver $resolver): LazyInterface
+    public function inject(): LazyInterface
     {
         if ($this->methodName) {
             $callable = [new LazyGet($this->name), $this->methodName];

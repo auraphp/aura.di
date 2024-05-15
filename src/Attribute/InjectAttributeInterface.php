@@ -11,9 +11,8 @@ declare(strict_types=1);
 namespace Aura\Di\Attribute;
 
 use Aura\Di\Injection\LazyInterface;
-use Aura\Di\Resolver\Resolver;
 
 interface InjectAttributeInterface
 {
-    public function apply(Resolver $resolver): LazyInterface;
+    public function inject(): LazyInterface;
 }

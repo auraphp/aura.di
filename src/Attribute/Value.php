@@ -13,7 +13,6 @@ namespace Aura\Di\Attribute;
 use Attribute;
 use Aura\Di\Injection\LazyInterface;
 use Aura\Di\Injection\LazyValue;
-use Aura\Di\Resolver\Resolver;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Value implements InjectAttributeInterface
@@ -25,7 +24,7 @@ class Value implements InjectAttributeInterface
         $this->name = $name;
     }
 
-    public function apply(Resolver $resolver): LazyInterface
+    public function inject(): LazyInterface
     {
         return new LazyValue($this->name);
     }
