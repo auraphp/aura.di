@@ -146,11 +146,32 @@ class Resolver
         $this->services[$service] = $val;
     }
 
+    /**
+     *
+     * Does a particular service definition exist?
+     *
+     * @param string $service The service key to look up.
+     *
+     * @return bool
+     *
+     */
     public function hasService(string $service): bool
     {
         return isset($this->services[$service]);
     }
 
+    /**
+     *
+     * Instantiates a service object by key, lazy-loading it as needed.
+     *
+     * @param string $service The service to get.
+     *
+     * @return object
+     *
+     * @throws Exception\ServiceNotFound when the requested service
+     * does not exist.
+     *
+     */
     public function getServiceInstance(string $service): object
     {
         if (! isset($this->services[$service])) {
