@@ -10,5 +10,6 @@
 8. [Container Configuration](config.md)
 9. [Contextual Injection](contextual-injection.md)
 10. [Auto-Resolution](auto.md)
-11. [Serializing](serializing.md)
-12. [Migrating from 2.x to 3.x](migrating.md)
+11. [Attributes](attributes.md)
+12. [Serializing](serializing.md)
+13. [Migrating](migrating.md)

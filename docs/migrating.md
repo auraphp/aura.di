@@ -1,7 +1,34 @@
 # Migrating
 
-This document helps to upgrade users moving from 3.x to 4.x. Below you can also (still) find the upgrade guide for
-people upgrading from 2.x to 3.x.
+This document helps to upgrade users. It includes upgrading from 4.x to 5.x, but also still from 3.x to 4.x and from 2.x to 3.x.
+
+## Migrating from 4.x to 5.x
+
+Aura.Di 5.x is largely similar to 4.x, but there are some backwards-compatibility breaks, as well as some new features.
+
+### Container constructor change
+
+Constructing a `Container` directly, without using the `ContainerBuilder`, now requires a `Resolver`, not an `InjectionFactory`.
+
+```php
+// old code
+new Container(new InjectionFactory(new Resolver(new Reflector())));
+
+// new code
+new Container(new Resolver(new Reflector()));
+```
+
+### Object interface changes
+
+There a few API changes in the objects. They probably do not have consequences for  client libraries as they were not
+exposed classes.
+
+- The `InjectionFactory` now has no dependencies. The `Resolver` is not injected anymore and the `getResolver()` and `newInstance()` methods have been removed.
+- The `LazyInterface` now requires a `Resolver` to be passed to `__invoke`. Its implementations therefore also have different constructor signatures.
+
+### Dropped PHP 7
+
+Make sure you use the correct PHP version. This library uses the object type-hint and therefore requires PHP 8.0.
 
 ## Migrating from 3.x to 4.x
 
