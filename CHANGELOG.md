@@ -3,6 +3,7 @@
 ## Unreleased
 
 - (ADD) Inject via attributes
+- (ADD) Support for PHP 8.2 and 8.3
 - (CHG) Dropped PHP 7
 - (CHG) Container constructor now requires a Resolver
 - (CHG) Container constructor does not require a InjectionFactory anymore
