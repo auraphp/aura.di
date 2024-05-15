@@ -18,6 +18,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
 
       - name: Download dependencies
         run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress --no-suggest --prefer-lowest --classmap-authoritative
