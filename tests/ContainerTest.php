@@ -6,12 +6,11 @@ use Aura\Di\Fake\FakeMutationClass;
 use Aura\Di\Fake\FakeMutationWithDependencyClass;
 use Aura\Di\Fake\FakeOtherClass;
 use Aura\Di\Fake\FakeParamsClass;
-use Aura\Di\Injection\InjectionFactory;
 use Aura\Di\Resolver\Blueprint;
 use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
 use PHPUnit\Framework\MockObject\MockObject;
-use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ContainerTest extends TestCase
 {
@@ -24,9 +23,9 @@ class ContainerTest extends TestCase
      */
     protected $container;
 
-    protected function set_up()
+    protected function setUp(): void
     {
-        parent::set_up();
+        parent::setUp();
         $this->resolver = new Resolver(new Reflector());
         $this->container = new Container($this->resolver);
     }

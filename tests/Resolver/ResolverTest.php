@@ -4,10 +4,9 @@ namespace Aura\Di\Resolver;
 use Aura\Di\Fake\FakeInterfaceClass1;
 use Aura\Di\Fake\FakeInterfaceClass2;
 use Aura\Di\Injection\Factory;
-use Aura\Di\Injection\InjectionFactory;
 use Aura\Di\Injection\Lazy;
 use Aura\Di\Injection\LazyGet;
-use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ResolverTest extends TestCase
 {
@@ -16,9 +15,9 @@ class ResolverTest extends TestCase
      */
     protected $resolver;
 
-    protected function set_up()
+    protected function setUp(): void
     {
-        parent::set_up();
+        parent::setUp();
         $this->resolver = new Resolver(new Reflector());
     }
 

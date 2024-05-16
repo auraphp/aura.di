@@ -1,7 +1,7 @@
 <?php
 namespace Aura\Di;
 
-use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ResolutionHelperTest extends TestCase
 {
@@ -9,9 +9,9 @@ class ResolutionHelperTest extends TestCase
 
     protected $helper;
 
-    protected function set_up()
+    protected function setUp(): void
     {
-        parent::set_up();
+        parent::setUp();
         $this->container = $this->getMockBuilder(Container::class)
             ->disableOriginalConstructor()
             ->getMock();
