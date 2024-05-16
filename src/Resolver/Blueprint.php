@@ -43,6 +43,11 @@ final class Blueprint
     private array $paramSettings = [];
 
     /**
+     * @var bool
+     */
+    private bool $needsExpansion = false;
+
+    /**
      * @param string $className
      * @param array $params
      * @param array $setters
@@ -59,6 +64,13 @@ final class Blueprint
         $this->params = $params;
         $this->setters = $setters;
         $this->mutations = $mutations;
+
+        foreach ($params as $value) {
+            if ($value instanceof DefaultValueParam) {
+                $this->needsExpansion = true;
+                break;
+            }
+        }
     }
 
     /**
@@ -77,6 +89,7 @@ final class Blueprint
             $this->mergeMutations($mergeBlueprint)
         );
         $blueprint->paramSettings = array_merge($this->paramSettings, $mergeBlueprint->paramSettings);
+        $blueprint->needsExpansion = $this->needsExpansion || $mergeBlueprint->needsExpansion;
         return $blueprint;
     }
 
@@ -104,7 +117,7 @@ final class Blueprint
 
                     return $val;
                 },
-                array_values($this->expandParams())
+                array_values($this->needsExpansion ? $this->expandParams() : $this->params)
             )
         );
 
@@ -174,6 +187,16 @@ final class Blueprint
     {
         $clone = clone $this;
         $clone->paramSettings = $paramSettings;
+
+        if (!$this->needsExpansion) {
+            foreach ($paramSettings as $isVariadic) {
+                if ($isVariadic) {
+                    $clone->needsExpansion = true;
+                    break;
+                }
+            }
+        }
+
         return $clone;
     }
 
