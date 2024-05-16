@@ -92,7 +92,7 @@ class InjectionFactory
      *
      * Returns a new LazyGet.
      *
-     * @param ContainerInterface $container The service container.
+     * @param Container $container The service container.
      *
      * @param string $service The service to retrieve.
      *

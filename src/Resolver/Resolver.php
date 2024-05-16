@@ -138,7 +138,7 @@ class Resolver
      *
      * @param string $service The service key.
      *
-     * @param object|callable $val The service object; or callable.
+     * @param object $val The service object; or callable.
      *
      */
     public function setService(string $service, object $val): void
