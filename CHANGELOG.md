@@ -1,15 +1,20 @@
 # CHANGELOG
 
-## Unreleased
+## Unreleased (5.x)
 
 - (ADD) Inject via attributes
 - (ADD) Support for PHP 8.2 and 8.3
+- (ADD) Support for PHPUnit 10
+- (ADD) PHPStan analysis
+- (CHG) Dropped support psr/container 1.x 
 - (CHG) Dropped PHP 7
+- (CHG) Dropped PHPUnit 8
+- (CHG) Remove roave/security-advisories (include composer now)
 - (CHG) Container constructor now requires a Resolver
 - (CHG) Container constructor does not require a InjectionFactory anymore
 - (CHG) LazyInterface now expects a Resolver when __invoke gets called
 - (CHG) Resolver now holds the service instances
-
+- (CHG) Dropped PHPUnit polyfills
 
 ## 4.2.1
 
