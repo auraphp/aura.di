@@ -13,9 +13,9 @@ class AutoResolverTest extends ResolverTest
      */
     protected $resolver;
 
-    protected function set_up()
+    protected function setUp(): void
     {
-        parent::set_up();
+        parent::setUp();
         $this->resolver = new AutoResolver(new Reflector());
     }
 

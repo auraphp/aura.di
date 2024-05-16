@@ -3,7 +3,7 @@ namespace Aura\Di\Injection;
 
 use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
-use Yoast\PHPUnitPolyfills\TestCases\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class LazyIncludeTest extends TestCase
 {
