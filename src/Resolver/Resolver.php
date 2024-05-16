@@ -296,16 +296,15 @@ class Resolver
             $spec = new Blueprint($class);
         }
 
-        // stores the unified params and setters
-        $this->unified[$class] = new Blueprint(
+        $unified = new Blueprint(
             $class,
             $this->getUnifiedParams($class, $spec->getParams()),
             $this->getUnifiedSetters($class, $spec->getSetters()),
-            $this->getUnifiedMutations($class, $spec->getMutations())
+            $this->getUnifiedMutations($class, $spec->getMutations()),
         );
 
-        // done, return the unified values
-        return $this->unified[$class];
+        // stores and returns the unified params and setters
+        return $this->unified[$class] = $unified->withParamSettings($this->getParamSettings($class));
     }
 
     /**
@@ -502,6 +501,17 @@ class Resolver
         return $unified;
     }
 
+    private function getParamSettings(string $class): array
+    {
+        $unified = [];
+        $rparams = $this->reflector->getParams($class);
+        foreach ($rparams as $rparam) {
+            $unified[$rparam->getName()] = $rparam->isVariadic();
+        }
+
+        return $unified;
+    }
+
     /**
      * Expands variadic parameters onto the end of a contructor parameters array.
      *
@@ -511,13 +521,11 @@ class Resolver
      */
     protected function expandParams(Blueprint $blueprint): Blueprint
     {
-        $class = $blueprint->getClassName();
         $params = $blueprint->getParams();
 
         $variadicParams = [];
-        foreach ($this->reflector->getParams($class) as $reflectParam) {
-            $paramName = $reflectParam->getName();
-            if ($reflectParam->isVariadic() && is_array($params[$paramName])) {
+        foreach ($blueprint->getParamSettings() as $paramName => $isVariadic) {
+            if ($isVariadic && is_array($params[$paramName])) {
                 $variadicParams = array_merge($variadicParams, $params[$paramName]);
                 unset($params[$paramName]);
                 break; // There can only be one

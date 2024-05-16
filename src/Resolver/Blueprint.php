@@ -20,22 +20,27 @@ final class Blueprint
     /**
      * @var string
      */
-    private $className;
+    private string $className;
 
     /**
      * @var array
      */
-    private $params;
+    private array $params;
 
     /**
      * @var array
      */
-    private $setters;
+    private array $setters;
 
     /**
      * @var array
      */
-    private $mutations;
+    private array $mutations;
+
+    /**
+     * @var array
+     */
+    private array $paramSettings = [];
 
     /**
      * @param string $className
@@ -47,7 +52,7 @@ final class Blueprint
         string $className,
         array $params = [],
         array $setters = [],
-        array $mutations = []
+        array $mutations = [],
     )
     {
         $this->className = $className;
@@ -65,12 +70,14 @@ final class Blueprint
      */
     public function merge(Blueprint $mergeBlueprint): Blueprint
     {
-        return new Blueprint(
+        $blueprint = new Blueprint(
             $this->className,
             $this->mergeParams($mergeBlueprint),
             $this->mergeSetters($mergeBlueprint),
             $this->mergeMutations($mergeBlueprint)
         );
+        $blueprint->paramSettings = array_merge($this->paramSettings, $mergeBlueprint->paramSettings);
+        return $blueprint;
     }
 
     /**
@@ -157,6 +164,25 @@ final class Blueprint
     public function getMutations(): array
     {
         return $this->mutations;
+    }
+
+    /**
+     * @param array $paramSettings
+     * @return Blueprint
+     */
+    public function withParamSettings(array $paramSettings): self
+    {
+        $clone = clone $this;
+        $clone->paramSettings = $paramSettings;
+        return $clone;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParamSettings(): array
+    {
+        return $this->paramSettings;
     }
 
     /**
