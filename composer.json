@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": "^8.0",
-        "psr/container": "^1.1.1 || ^2.0.2"
+        "psr/container": "^2.0.2"
     },
     "autoload": {
         "psr-4": {
@@ -29,8 +29,7 @@
     "require-dev": {
         "producer/producer": "^2.3",
         "yoast/phpunit-polyfills": "^2.0",
-        "phpunit/phpunit": "^9.0 || ^10.0",
-        "roave/security-advisories": "dev-master"
+        "phpunit/phpunit": "^9.0 || ^10.0"
     },
     "autoload-dev": {
         "psr-4": {
