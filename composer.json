@@ -29,7 +29,8 @@
     "require-dev": {
         "producer/producer": "^2.3",
         "yoast/phpunit-polyfills": "^2.0",
-        "phpunit/phpunit": "^9.0 || ^10.0"
+        "phpunit/phpunit": "^9.0 || ^10.0",
+        "phpstan/phpstan": "^1.11.1"
     },
     "autoload-dev": {
         "psr-4": {
@@ -38,5 +39,11 @@
     },
     "provide": {
         "psr/container-implementation": "^1.0"
+    },
+    "scripts": {
+        "test": [
+            "./vendor/bin/phpunit",
+            "./vendor/bin/phpstan analyse -l 5 src"
+        ]
     }
 }

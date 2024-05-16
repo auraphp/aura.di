@@ -73,7 +73,6 @@ class Factory
      * factory can make its own, using sequential params in a function; then
      * the factory call can be replaced by a call to this Factory.
      *
-     * @param array $params
      * @return object
      */
     public function __invoke(Resolver $resolver): object

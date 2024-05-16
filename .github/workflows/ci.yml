@@ -52,4 +52,4 @@ jobs:
         run: composer install --classmap-authoritative
 
       - name: Run tests
-        run: ./vendor/bin/phpunit
+        run: composer test
