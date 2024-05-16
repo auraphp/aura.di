@@ -141,7 +141,7 @@ class Resolver
      * @param object $val The service object; or callable.
      *
      */
-    public function setService(string $service, object $val): void
+    public function setService(string $service, object|callable $val): void
     {
         $this->services[$service] = $val;
     }

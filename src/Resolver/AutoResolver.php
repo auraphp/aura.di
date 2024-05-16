@@ -12,6 +12,7 @@ namespace Aura\Di\Resolver;
 use Aura\Di\Injection\LazyNew;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
@@ -59,7 +60,7 @@ class AutoResolver extends Resolver
         }
 
         try {
-            $rtype = $rparam->getType()
+            $rtype = $rparam->getType() instanceof ReflectionNamedType
                 ? new ReflectionClass($rparam->getType()->getName())
                 : null ;
         } catch (ReflectionException $re) {
