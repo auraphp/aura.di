@@ -76,14 +76,14 @@ final class Blueprint
     /**
      * Instantiates a new object based on the current blueprint.
      *
-     * @param ReflectionClass $reflectedClass
-     *
      * @return object
      */
-    public function __invoke(Resolver $resolver, ReflectionClass $reflectedClass): object
+    public function __invoke(Resolver $resolver): object
     {
-        $object = $reflectedClass->newInstanceArgs(
-            array_map(
+        $className = $this->className;
+
+        $object = new $className(
+            ...array_map(
                 function ($val) use ($resolver) {
                     // is the param missing?
                     if ($val instanceof UnresolvedParam) {

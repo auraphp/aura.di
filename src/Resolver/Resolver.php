@@ -221,7 +221,6 @@ class Resolver
             return call_user_func(
                 $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
                 $this,
-                $this->reflector->getClass($blueprint->getClassName())
             );
         }
 
@@ -255,7 +254,6 @@ class Resolver
         $resolved = call_user_func(
             $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
             $this,
-            $this->reflector->getClass($blueprint->getClassName())
         );
 
         foreach ($contextualBlueprints as $contextualBlueprint) {
