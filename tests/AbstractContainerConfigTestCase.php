@@ -18,7 +18,7 @@ use Yoast\PHPUnitPolyfills\TestCases\TestCase;
  * @package Aura.Di
  *
  */
-abstract class AbstractContainerConfigTest extends TestCase
+abstract class AbstractContainerConfigTestCase extends TestCase
 {
     /**
      *
