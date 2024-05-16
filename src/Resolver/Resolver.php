@@ -219,7 +219,7 @@ class Resolver
     {
         if ($contextualBlueprints === []) {
             return call_user_func(
-                $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+                $this->getUnified($blueprint->getClassName())->merge($blueprint),
                 $this,
             );
         }
@@ -252,7 +252,7 @@ class Resolver
         }
 
         $resolved = call_user_func(
-            $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+            $this->getUnified($blueprint->getClassName())->merge($blueprint),
             $this,
         );
 
@@ -510,32 +510,5 @@ class Resolver
         }
 
         return $unified;
-    }
-
-    /**
-     * Expands variadic parameters onto the end of a contructor parameters array.
-     *
-     * @param Blueprint $blueprint The blueprint to expand parameters for.
-     *
-     * @return Blueprint The blueprint with expanded constructor parameters.
-     */
-    protected function expandParams(Blueprint $blueprint): Blueprint
-    {
-        $params = $blueprint->getParams();
-
-        $variadicParams = [];
-        foreach ($blueprint->getParamSettings() as $paramName => $isVariadic) {
-            if ($isVariadic && is_array($params[$paramName])) {
-                $variadicParams = array_merge($variadicParams, $params[$paramName]);
-                unset($params[$paramName]);
-                break; // There can only be one
-            }
-
-            if ($params[$paramName] instanceof DefaultValueParam) {
-                $params[$paramName] = $params[$paramName]->getValue();
-            }
-        }
-
-        return $blueprint->replaceParams(array_merge($params, array_values($variadicParams)));
     }
 }

@@ -104,7 +104,7 @@ final class Blueprint
 
                     return $val;
                 },
-                array_values($this->params)
+                array_values($this->expandParams())
             )
         );
 
@@ -178,36 +178,6 @@ final class Blueprint
     }
 
     /**
-     * @return array
-     */
-    public function getParamSettings(): array
-    {
-        return $this->paramSettings;
-    }
-
-    /**
-     * @param array $params
-     * @return Blueprint
-     */
-    public function replaceParams(array $params): self
-    {
-        $clone = clone $this;
-        $clone->params = $params;
-        return $clone;
-    }
-
-    /**
-     * @param array $params
-     * @return Blueprint
-     */
-    public function withParams(array $params): self
-    {
-        $clone = clone $this;
-        $clone->params = \array_merge($this->params, $params);
-        return $clone;
-    }
-
-    /**
      *
      * Merges the setters with overrides; also invokes Lazy values.
      *
@@ -273,5 +243,28 @@ final class Blueprint
         }
 
         return $params;
+    }
+
+    /**
+     * Expands variadic parameters onto the end of a contructor parameters array.
+     */
+    private function expandParams(): array
+    {
+        $params = $this->getParams();
+
+        $variadicParams = [];
+        foreach ($this->paramSettings as $paramName => $isVariadic) {
+            if ($isVariadic && is_array($params[$paramName])) {
+                $variadicParams = array_merge($variadicParams, $params[$paramName]);
+                unset($params[$paramName]);
+                break; // There can only be one
+            }
+
+            if ($params[$paramName] instanceof DefaultValueParam) {
+                $params[$paramName] = $params[$paramName]->getValue();
+            }
+        }
+
+        return array_merge($params, array_values($variadicParams));
     }
 }
