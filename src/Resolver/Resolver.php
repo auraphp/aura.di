@@ -272,6 +272,24 @@ class Resolver
         return $resolved;
     }
 
+    public function compile(array $extraClasses = []): void
+    {
+        $classes = \array_unique([
+            ...\array_keys($this->params),
+            ...\array_keys($this->setters),
+            ...\array_keys($this->mutations),
+            ...$extraClasses,
+        ]);
+
+        foreach ($classes as $class) {
+            $this->getUnified($class);
+        }
+
+        $this->params = [];
+        $this->setters = [];
+        $this->mutations = [];
+    }
+
     /**
      *
      * Returns the unified constructor params and setters for a class.

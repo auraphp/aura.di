@@ -1,6 +1,9 @@
 <?php
 namespace Aura\Di;
 
+use Aura\Di\Fake\FakeConstructAttributeClass;
+use Aura\Di\Fake\FakeInterfaceClass1;
+use Aura\Di\Fake\FakeInterfaceClass2;
 use Aura\Di\Fake\FakeParentClass;
 use PHPUnit\Framework\TestCase;
 
@@ -155,5 +158,39 @@ class ContainerBuilderTest extends TestCase
 
         $this->expectException(\Exception::class);
         serialize($di);
+    }
+
+    public function testCompilationSerialization()
+    {
+        $config_classes = [
+            new \Aura\Di\Fake\FakeLibraryConfig,
+            new \Aura\Di\Fake\FakeProjectConfig,
+            new \Aura\Di\Fake\FakeCompilationTestConfig(),
+        ];
+
+        $extra_classes = [
+            FakeConstructAttributeClass::class
+        ];
+
+        $di = $this->builder->newCompiledInstance($config_classes, $extra_classes);
+        $serialized = \serialize($di);
+        $di = \unserialize($serialized);
+        $di = $this->builder->configureCompiledInstance($di, $config_classes);
+
+        $this->assertInstanceOf('Aura\Di\Container', $di);
+
+        $expect = 'zim';
+        $actual = $di->get('library_service');
+        $this->assertSame($expect, $actual->foo);
+
+        $expect = 'gir';
+        $actual = $di->get('project_service');
+        $this->assertSame($expect, $actual->baz);
+
+        $actual = $di->newInstance(FakeConstructAttributeClass::class);
+        $this->assertInstanceOf(FakeInterfaceClass1::class, $actual->getFakeService());
+        $this->assertInstanceOf(FakeInterfaceClass1::class, $actual->getFakeServiceGet());
+        $this->assertInstanceOf(FakeInterfaceClass2::class, $actual->getFakeInstance());
+        $this->assertSame('value', $actual->getString());
     }
 }
