@@ -10,7 +10,7 @@ class FakeCompilationTestConfig extends ContainerConfig
     {
         parent::define($di);
         $fakeService = new FakeInterfaceClass1();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $di->set('fake.service', $fakeService);

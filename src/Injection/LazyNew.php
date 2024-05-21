@@ -9,6 +9,8 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Injection;
 
+use Aura\Di\Resolver\Blueprint;
+
 /**
  *
  * Returns a new instance of an object when invoked.
@@ -18,4 +20,8 @@ namespace Aura\Di\Injection;
  */
 class LazyNew extends Factory implements LazyInterface
 {
+    public static function fromClassName(string $className): self
+    {
+        return new self(new Blueprint($className));
+    }
 }

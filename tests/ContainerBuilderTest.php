@@ -2,8 +2,10 @@
 namespace Aura\Di;
 
 use Aura\Di\Fake\FakeConstructAttributeClass;
+use Aura\Di\Fake\FakeInjectAnnotatedWithClass;
 use Aura\Di\Fake\FakeInterfaceClass1;
 use Aura\Di\Fake\FakeInterfaceClass2;
+use Aura\Di\Fake\FakeInvokableClass;
 use Aura\Di\Fake\FakeParentClass;
 use PHPUnit\Framework\TestCase;
 
@@ -166,16 +168,17 @@ class ContainerBuilderTest extends TestCase
             new \Aura\Di\Fake\FakeLibraryConfig,
             new \Aura\Di\Fake\FakeProjectConfig,
             new \Aura\Di\Fake\FakeCompilationTestConfig(),
+            new ContainerConfigClassScanner(
+                [__DIR__ . '/Fake'],
+                ['Aura\Di\Fake'],
+            )
         ];
 
-        $extra_classes = [
-            FakeConstructAttributeClass::class
-        ];
-
-        $di = $this->builder->newCompiledInstance($config_classes, $extra_classes);
+        $builder = new ContainerBuilder();
+        $di = $builder->newCompiledInstance($config_classes);
         $serialized = \serialize($di);
         $di = \unserialize($serialized);
-        $di = $this->builder->configureCompiledInstance($di, $config_classes);
+        $di = $builder->configureCompiledInstance($di, $config_classes);
 
         $this->assertInstanceOf('Aura\Di\Container', $di);
 
@@ -189,8 +192,16 @@ class ContainerBuilderTest extends TestCase
 
         $actual = $di->newInstance(FakeConstructAttributeClass::class);
         $this->assertInstanceOf(FakeInterfaceClass1::class, $actual->getFakeService());
-        $this->assertInstanceOf(FakeInterfaceClass1::class, $actual->getFakeServiceGet());
+        $this->assertInstanceOf(FakeInvokableClass::class, $actual->getFakeServiceGet());
         $this->assertInstanceOf(FakeInterfaceClass2::class, $actual->getFakeInstance());
         $this->assertSame('value', $actual->getString());
+
+        /** @var FakeInjectAnnotatedWithClass $injectedWith */
+        $injectedWith = $di->newInstance(FakeInjectAnnotatedWithClass::class);
+        $this->assertCount(1, $injectedWith->getWorkers());
+
+        $annotation = $injectedWith->getWorkers()[0];
+        $this->assertSame(3, $annotation['someSetting']);
+        $this->assertSame('Aura\Di\Fake\FakeConstructAttributeClass', $annotation['className']);
     }
 }

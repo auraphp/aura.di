@@ -3,6 +3,11 @@
 ## Unreleased (5.x)
 
 - (ADD) Inject via attributes
+- (ADD) Configure the container via attributes using the AttributeConfigInterface
+- (ADD) Directories scanner for classes and annotations
+- (ADD) Dependency requirement of composer/class-map-generator when using the scanner
+- (ADD) Compile the container, making it fully ready to instantiate instances and services
+- (ADD) ContainerCompileInterface to allow config classes to hook into the compilation process
 - (ADD) Support for PHP 8.2 and 8.3
 - (ADD) Support for PHPUnit 10
 - (ADD) PHPStan analysis

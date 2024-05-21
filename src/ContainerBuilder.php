@@ -100,36 +100,33 @@ class ContainerBuilder
      * @param array $configClasses A list of ContainerConfig classes to
      * instantiate and invoke for configuring the Container.
      *
-     * @param array $extraCompileClasses A list of classes that should also be compiled, e.g. a list of classes that
-     * might contain container annotations.
-     *
      * @param bool $autoResolve Use the auto-resolver?
      *
      * @return Container
      */
     public function newCompiledInstance(
         array $configClasses = [],
-        array $extraCompileClasses = [],
         bool $autoResolve = false,
     ): Container {
         $resolver = $this->newResolver($autoResolve);
         $di = new Container($resolver);
-        $collection = $this->newConfigCollection($configClasses);
 
+        $collection = $this->newConfigCollection($configClasses);
         $collection->define($di);
+        $collection->compile($di);
+
         $di->lock();
-        $resolver->compile($extraCompileClasses);
+        $resolver->compile();
 
         return $di;
     }
 
     /**
      *
-     * Creates a new Container, applies ContainerConfig classes to define()
-     * services, locks the container, and applies the ContainerConfig instances
-     * to modify() services.
+     * Applies the ContainerConfig instances to modify() services onto a Container that was
+     * compiled.
      *
-     * @param Container $compiledContainer The container that has been compiled in an earlier step.
+     * @param Container $container The container that has been compiled in an earlier step.
      *
      * @param array $configClasses A list of ContainerConfig classes to
      * instantiate and invoke for configuring the Container.
@@ -137,11 +134,11 @@ class ContainerBuilder
      * @return Container
      */
     public function configureCompiledInstance(
-        Container $compiledContainer,
+        Container $container,
         array $configClasses = [],
     ): Container {
-        $this->newConfigCollection($configClasses)->modify($compiledContainer);
-        return $compiledContainer;
+        $this->newConfigCollection($configClasses)->modify($container);
+        return $container;
     }
 
     /**

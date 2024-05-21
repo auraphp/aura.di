@@ -13,7 +13,6 @@ namespace Aura\Di\Attribute;
 use Attribute;
 use Aura\Di\Injection\LazyInterface;
 use Aura\Di\Injection\LazyNew;
-use Aura\Di\Resolver\Blueprint;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Instance implements AnnotatedInjectInterface
@@ -27,6 +26,6 @@ class Instance implements AnnotatedInjectInterface
 
     public function inject(): LazyInterface
     {
-        return new LazyNew(new Blueprint($this->name));
+        return LazyNew::fromClassName($this->name);
     }
 }

@@ -44,7 +44,7 @@ class Resolver
      * @var Reflector
      *
      */
-    protected $reflector;
+    protected Reflector $reflector;
 
     /**
      *
@@ -53,7 +53,7 @@ class Resolver
      * @var array
      *
      */
-    protected $services = [];
+    protected array $services = [];
 
     /**
      *
@@ -62,7 +62,7 @@ class Resolver
      * @var array
      *
      */
-    protected $params = [];
+    protected array $params = [];
 
     /**
      *
@@ -71,7 +71,7 @@ class Resolver
      * @var array
      *
      */
-    protected $setters = [];
+    protected array $setters = [];
 
     /**
      *
@@ -80,7 +80,7 @@ class Resolver
      * @var array
      *
      */
-    protected $mutations = [];
+    protected array $mutations = [];
 
     /**
      *
@@ -89,7 +89,7 @@ class Resolver
      * @var array
      *
      */
-    protected $values = [];
+    protected array $values = [];
 
     /**
      *
@@ -99,7 +99,7 @@ class Resolver
      * @var array|Blueprint[]
      *
      */
-    protected $unified = [];
+    protected array $unified = [];
 
     /**
      *
@@ -272,13 +272,12 @@ class Resolver
         return $resolved;
     }
 
-    public function compile(array $extraClasses = []): void
+    public function compile(): void
     {
         $classes = \array_unique([
             ...\array_keys($this->params),
             ...\array_keys($this->setters),
             ...\array_keys($this->mutations),
-            ...$extraClasses,
         ]);
 
         foreach ($classes as $class) {

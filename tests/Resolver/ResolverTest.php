@@ -3,6 +3,7 @@ namespace Aura\Di\Resolver;
 
 use Aura\Di\Fake\FakeInterfaceClass1;
 use Aura\Di\Fake\FakeInterfaceClass2;
+use Aura\Di\Fake\FakeInvokableClass;
 use Aura\Di\Injection\Factory;
 use Aura\Di\Injection\Lazy;
 use Aura\Di\Injection\LazyGet;
@@ -217,7 +218,7 @@ class ResolverTest extends TestCase
     public function testAttributes()
     {
         $fakeService = new FakeInterfaceClass1();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $this->resolver->setService('fake.service', $fakeService);
@@ -234,7 +235,7 @@ class ResolverTest extends TestCase
     {
         $fakeService = new FakeInterfaceClass1();
         $fakeService2 = new FakeInterfaceClass2();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $this->resolver->setService('fake.service', $fakeService);
@@ -250,7 +251,7 @@ class ResolverTest extends TestCase
     {
         $fakeService = new FakeInterfaceClass1();
         $fakeService2 = new FakeInterfaceClass2();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $this->resolver->setService('fake.service', $fakeService);

@@ -60,3 +60,48 @@ $object = $di->newInstance('Vendor\Package\ClassName');
 > N.b.: The _Container_ locks itself once a new instance is produced; this ensures that the _Container_ configuration cannot be modified once objects have been created.
 
 However, this is a relatively naive way to create objects with the _Container_. It is better to specify the various constructor parameters, setter methods, and so on, and let the _Container_ inject those values for us only when the object is used as a dependency for something else.
+
+## Full-featured instantiation
+
+A full-featured container can use [attributes](attributes.md) for injection and container modification. Moreover, for
+maximum performance, we would have to compile the container, serialize it and save it to a cache layer like the filesystem.
+Subsequent processes would only have to unserialize to have a compiled container. 
+
+The `ContainerConfigClassScanner` scans for classes and annotations inside your project. This does require, 
+however, to add a package to your dependencies.
+
+```sh
+composer require composer/class-map-generator
+``` 
+
+Creating a fully-featured container could look as follows: 
+
+```php
+use Aura\Di\ContainerBuilder;
+use Aura\Di\ContainerConfigClassScanner;
+use Aura\Di\Resolver\ResolverFactory;
+
+$serializedContainerFile = '/var/compiled.ser';
+$config_classes = [
+    new \MyApp\Config1,
+    new \MyApp\Config2,
+    new ContainerConfigClassScanner(
+        [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
+        ['MyApp\\'], // classes inside these namespaces should be compiled
+    )
+];
+
+if (file_exists($serializedContainerFile)) {
+    $di = \unserialize(file_get_contents($serializedContainerFile));
+} else {
+    $builder = new ContainerBuilder();
+    $di = $builder->newCompiledInstance($config_classes);
+    
+    $serialized = \serialize($di);
+    file_put_contents($serializedContainerFile, $serialized); // atomic for concurrency
+}
+
+$di = $builder->configureCompiledInstance($di, $config_classes);
+```
+
+From this point on you can call `newInstance` or `get` on the container.
