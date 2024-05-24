@@ -185,9 +185,9 @@ $di->params['Example']['foo'] = $di->lazyGetCall('config', 'get', 'alpha');
 ## Modify the Container using attributes
 
 Modifying the container with attributes requires building the container with the
-[`ContainerConfigClassScanner`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
+[`ClassScanner`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
 passed directories for classes and annotations. Every attribute that implements the `AttributeConfigInterface` can modify the
-container. See the [`ContainerConfigClassScanner` documentation](config.md#scan-for-classes-and-annotations) how to 
+container. See the [`ClassScanner` documentation](config.md#scan-for-classes-and-annotations) how to 
 modify the container for external attributes.
 
 In the following example we create our own a `#[Route]` attribute that implements the `AttributeConfigInterface` and 

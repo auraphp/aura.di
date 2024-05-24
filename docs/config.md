@@ -160,7 +160,7 @@ $di->params[VendorClass::class] = [
 
 ## Scan for classes and annotations
 
-The `ContainerConfigClassScanner` scans the passed directories for classes and annotations. You will need that if you
+The `ClassScanner` scans the passed directories for classes and annotations. You will need that if you
 want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes). The classes inside
 the passed namespaces will be compiled into blueprints, making sure all the required meta-data is there to create an
 instance of the class.
@@ -175,11 +175,14 @@ The following example demonstrates how to scan your project source files for ann
 controllers, services and repository classes into a blueprints.
 
 ```php
+use Aura\Di\ClassScanner;
+use Aura\Di\ContainerBuilder;
+
 $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    new ContainerConfigClassScanner(
+    new ClassScanner(
         [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
         ['MyApp\\Controller\\', 'MyApp\\Service\\', 'MyApp\\Repository\\'], // classes inside these namespaces should be compiled
     )
@@ -188,7 +191,7 @@ $config_classes = [
 $di = $builder->newCompiledInstance($config_classes);
 ```
 
-When using the `ContainerConfigClassScanner`, make sure to serialize and cache the container output. If you do
+When using the `ClassScanner`, make sure to serialize and cache the container output. If you do
 not do that, directories will be scanned every instance of the container.
 
 If your attribute cannot implement the `AttributeConfigInterface`, e.g. the attribute is defined in an external package, 
@@ -197,7 +200,7 @@ you can pass a map with the class name of the attribute and an implementation of
 ```php
 use Aura\Di\AttributeConfigInterface;
 
-new ContainerConfigClassScanner(
+new ClassScanner(
     [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
     ['MyApp\\'], // classes inside these namespaces should be compiled,
     [

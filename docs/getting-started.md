@@ -67,25 +67,25 @@ A full-featured container can use [attributes](attributes.md) for injection and 
 maximum performance, we would have to compile the container, serialize it and save it to a cache layer like the filesystem.
 Subsequent processes would only have to unserialize to have a compiled container. 
 
-The `ContainerConfigClassScanner` scans for classes and annotations inside your project. This does require, 
+The `ClassScanner` scans for classes and annotations inside your project. This does require, 
 however, to add a package to your dependencies.
 
 ```sh
 composer require composer/class-map-generator
 ``` 
 
-Creating a fully-featured container could look as follows: 
+Creating a fully-featured container could look as follows:
 
 ```php
 use Aura\Di\ContainerBuilder;
-use Aura\Di\ContainerConfigClassScanner;
+use Aura\Di\ClassScanner;
 use Aura\Di\Resolver\ResolverFactory;
 
 $serializedContainerFile = '/var/compiled.ser';
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    new ContainerConfigClassScanner(
+    new ClassScanner(
         [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
         ['MyApp\\'], // classes inside these namespaces should be compiled
     )

@@ -168,7 +168,7 @@ class ContainerBuilderTest extends TestCase
             new \Aura\Di\Fake\FakeLibraryConfig,
             new \Aura\Di\Fake\FakeProjectConfig,
             new \Aura\Di\Fake\FakeCompilationTestConfig(),
-            new ContainerConfigClassScanner(
+            new ClassScanner(
                 [__DIR__ . '/Fake'],
                 ['Aura\Di\Fake'],
             )

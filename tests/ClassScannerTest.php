@@ -6,10 +6,10 @@ use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
 use PHPUnit\Framework\TestCase;
 
-class ContainerConfigClassScannerTest extends TestCase
+class ClassScannerTest extends TestCase
 {
     /**
-     * @var ContainerConfigClassScanner
+     * @var ClassScanner
      */
     protected $config;
 
@@ -17,7 +17,7 @@ class ContainerConfigClassScannerTest extends TestCase
     {
         parent::setUp();
 
-        $this->config = new ContainerConfigClassScanner(
+        $this->config = new ClassScanner(
             [__DIR__ . '/Fake'],
             ['Aura\Di\Fake'],
         );

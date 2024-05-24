@@ -7,7 +7,7 @@ namespace Aura\Di;
 use Aura\Di\Resolver\Reflector;
 use Composer\ClassMapGenerator\ClassMapGenerator;
 
-class ContainerConfigClassScanner implements ContainerConfigInterface
+class ClassScanner implements ContainerConfigInterface
 {
     /**
      *
