@@ -5,10 +5,11 @@ use Aura\Di\Attribute\Instance;
 use Aura\Di\Attribute\Service;
 use Aura\Di\Attribute\Value;
 
+#[FakeWorkerAttribute(3)]
 class FakeConstructAttributeClass
 {
     private FakeInterface $fakeService;
-    private FakeInterface $fakeServiceGet;
+    private FakeInvokableClass $fakeServiceGet;
     private FakeInterface $fakeInstance;
     private string $string;
 
@@ -16,7 +17,7 @@ class FakeConstructAttributeClass
         #[Service('fake.service')]
         FakeInterface $fakeService,
         #[Service('fake.service', 'getFoo')]
-        FakeInterface $fakeServiceGet,
+        FakeInvokableClass $fakeServiceGet,
         #[Instance(FakeInterfaceClass2::class)]
         FakeInterface $fakeInstance,
         #[Value('fake.value')]
@@ -33,7 +34,7 @@ class FakeConstructAttributeClass
         return $this->fakeService;
     }
 
-    public function getFakeServiceGet(): FakeInterface
+    public function getFakeServiceGet(): FakeInvokableClass
     {
         return $this->fakeServiceGet;
     }

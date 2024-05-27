@@ -3,6 +3,7 @@ namespace Aura\Di\Resolver;
 
 use Aura\Di\Fake\FakeInterfaceClass1;
 use Aura\Di\Fake\FakeInterfaceClass2;
+use Aura\Di\Fake\FakeInvokableClass;
 use Aura\Di\Injection\Factory;
 use Aura\Di\Injection\Lazy;
 use Aura\Di\Injection\LazyGet;
@@ -217,7 +218,7 @@ class ResolverTest extends TestCase
     public function testAttributes()
     {
         $fakeService = new FakeInterfaceClass1();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $this->resolver->setService('fake.service', $fakeService);
@@ -234,7 +235,7 @@ class ResolverTest extends TestCase
     {
         $fakeService = new FakeInterfaceClass1();
         $fakeService2 = new FakeInterfaceClass2();
-        $fakeServiceGet = new FakeInterfaceClass1();
+        $fakeServiceGet = new FakeInvokableClass();
         $fakeService->setFoo($fakeServiceGet);
 
         $this->resolver->setService('fake.service', $fakeService);
@@ -244,5 +245,25 @@ class ResolverTest extends TestCase
 
         $actual = $this->resolver->resolve(new Blueprint('Aura\Di\Fake\FakeConstructAttributeClass'));
         $this->assertSame($fakeService2, $actual->getFakeService());
+    }
+
+    public function testCompile()
+    {
+        $fakeService = new FakeInterfaceClass1();
+        $fakeService2 = new FakeInterfaceClass2();
+        $fakeServiceGet = new FakeInvokableClass();
+        $fakeService->setFoo($fakeServiceGet);
+
+        $this->resolver->setService('fake.service', $fakeService);
+        $this->resolver->setService('fake.service2', $fakeService2);
+        $this->resolver->values['fake.value'] = 'value';
+        $this->resolver->params['Aura\Di\Fake\FakeConstructAttributeClass']['fakeService'] = new LazyGet('fake.service2');
+        $this->resolver->compile();
+
+        $actual = $this->resolver->resolve(new Blueprint('Aura\Di\Fake\FakeConstructAttributeClass'));
+        $this->assertSame($fakeService2, $actual->getFakeService());
+        $this->assertSame($fakeServiceGet, $actual->getFakeServiceGet());
+        $this->assertInstanceOf('Aura\Di\Fake\FakeInterfaceClass2', $actual->getFakeInstance());
+        $this->assertSame('value', $actual->getString());
     }
 }

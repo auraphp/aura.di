@@ -20,22 +20,32 @@ final class Blueprint
     /**
      * @var string
      */
-    private $className;
+    private string $className;
 
     /**
      * @var array
      */
-    private $params;
+    private array $params;
 
     /**
      * @var array
      */
-    private $setters;
+    private array $setters;
 
     /**
      * @var array
      */
-    private $mutations;
+    private array $mutations;
+
+    /**
+     * @var array
+     */
+    private array $paramSettings = [];
+
+    /**
+     * @var bool
+     */
+    private bool $needsExpansion = false;
 
     /**
      * @param string $className
@@ -47,13 +57,20 @@ final class Blueprint
         string $className,
         array $params = [],
         array $setters = [],
-        array $mutations = []
+        array $mutations = [],
     )
     {
         $this->className = $className;
         $this->params = $params;
         $this->setters = $setters;
         $this->mutations = $mutations;
+
+        foreach ($params as $value) {
+            if ($value instanceof DefaultValueParam) {
+                $this->needsExpansion = true;
+                break;
+            }
+        }
     }
 
     /**
@@ -65,25 +82,28 @@ final class Blueprint
      */
     public function merge(Blueprint $mergeBlueprint): Blueprint
     {
-        return new Blueprint(
+        $blueprint = new Blueprint(
             $this->className,
             $this->mergeParams($mergeBlueprint),
             $this->mergeSetters($mergeBlueprint),
             $this->mergeMutations($mergeBlueprint)
         );
+        $blueprint->paramSettings = array_merge($this->paramSettings, $mergeBlueprint->paramSettings);
+        $blueprint->needsExpansion = $this->needsExpansion || $mergeBlueprint->needsExpansion;
+        return $blueprint;
     }
 
     /**
      * Instantiates a new object based on the current blueprint.
      *
-     * @param ReflectionClass $reflectedClass
-     *
      * @return object
      */
-    public function __invoke(Resolver $resolver, ReflectionClass $reflectedClass): object
+    public function __invoke(Resolver $resolver): object
     {
-        $object = $reflectedClass->newInstanceArgs(
-            array_map(
+        $className = $this->className;
+
+        $object = new $className(
+            ...array_map(
                 function ($val) use ($resolver) {
                     // is the param missing?
                     if ($val instanceof UnresolvedParam) {
@@ -97,7 +117,7 @@ final class Blueprint
 
                     return $val;
                 },
-                array_values($this->params)
+                array_values($this->needsExpansion ? $this->expandParams() : $this->params)
             )
         );
 
@@ -160,24 +180,23 @@ final class Blueprint
     }
 
     /**
-     * @param array $params
+     * @param array $paramSettings
      * @return Blueprint
      */
-    public function replaceParams(array $params): self
+    public function withParamSettings(array $paramSettings): self
     {
         $clone = clone $this;
-        $clone->params = $params;
-        return $clone;
-    }
+        $clone->paramSettings = $paramSettings;
 
-    /**
-     * @param array $params
-     * @return Blueprint
-     */
-    public function withParams(array $params): self
-    {
-        $clone = clone $this;
-        $clone->params = \array_merge($this->params, $params);
+        if (!$this->needsExpansion) {
+            foreach ($paramSettings as $isVariadic) {
+                if ($isVariadic) {
+                    $clone->needsExpansion = true;
+                    break;
+                }
+            }
+        }
+
         return $clone;
     }
 
@@ -247,5 +266,28 @@ final class Blueprint
         }
 
         return $params;
+    }
+
+    /**
+     * Expands variadic parameters onto the end of a contructor parameters array.
+     */
+    private function expandParams(): array
+    {
+        $params = $this->getParams();
+
+        $variadicParams = [];
+        foreach ($this->paramSettings as $paramName => $isVariadic) {
+            if ($isVariadic && is_array($params[$paramName])) {
+                $variadicParams = array_merge($variadicParams, $params[$paramName]);
+                unset($params[$paramName]);
+                break; // There can only be one
+            }
+
+            if ($params[$paramName] instanceof DefaultValueParam) {
+                $params[$paramName] = $params[$paramName]->getValue();
+            }
+        }
+
+        return array_merge($params, array_values($variadicParams));
     }
 }

@@ -89,6 +89,22 @@ class ConfigCollection extends ContainerConfig
 
     /**
      *
+     * Execute code after the Container is defined and before the Container is locked and compiled.
+     *
+     * @param Container $di The DI container.
+     *
+     */
+    public function compile(Container $di): void
+    {
+        foreach ($this->configs as $config) {
+            if ($config instanceof ContainerCompileInterface) {
+                $config->compile($di);
+            }
+        }
+    }
+
+    /**
+     *
      * Modify service objects for each config after the Container is locked.
      *
      * @param Container $di The DI container.

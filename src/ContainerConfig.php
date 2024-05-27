@@ -16,7 +16,7 @@ namespace Aura\Di;
  * @package Aura.Di
  *
  */
-class ContainerConfig implements ContainerConfigInterface
+class ContainerConfig implements ContainerCompileInterface
 {
     /**
      *
@@ -26,6 +26,17 @@ class ContainerConfig implements ContainerConfigInterface
      *
      */
     public function define(Container $di): void
+    {
+    }
+
+    /**
+     *
+     * Execute code after the Container is defined and before the Container is locked and compiled.
+     *
+     * @param Container $di The DI container.
+     *
+     */
+    public function compile(Container $di): void
     {
     }
 

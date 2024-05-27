@@ -29,7 +29,11 @@
     "require-dev": {
         "producer/producer": "^2.3",
         "phpunit/phpunit": "^9.0 || ^10.0",
-        "phpstan/phpstan": "^1.11.1"
+        "phpstan/phpstan": "^1.11.1",
+        "composer/class-map-generator": "^1.1"
+    },
+    "suggest": {
+        "composer/class-map-generator": "Required for scanning classes and annotations"
     },
     "autoload-dev": {
         "psr-4": {

@@ -44,7 +44,7 @@ class Resolver
      * @var Reflector
      *
      */
-    protected $reflector;
+    protected Reflector $reflector;
 
     /**
      *
@@ -53,7 +53,7 @@ class Resolver
      * @var array
      *
      */
-    protected $services = [];
+    protected array $services = [];
 
     /**
      *
@@ -62,7 +62,7 @@ class Resolver
      * @var array
      *
      */
-    protected $params = [];
+    protected array $params = [];
 
     /**
      *
@@ -71,7 +71,7 @@ class Resolver
      * @var array
      *
      */
-    protected $setters = [];
+    protected array $setters = [];
 
     /**
      *
@@ -80,7 +80,7 @@ class Resolver
      * @var array
      *
      */
-    protected $mutations = [];
+    protected array $mutations = [];
 
     /**
      *
@@ -89,7 +89,7 @@ class Resolver
      * @var array
      *
      */
-    protected $values = [];
+    protected array $values = [];
 
     /**
      *
@@ -99,7 +99,7 @@ class Resolver
      * @var array|Blueprint[]
      *
      */
-    protected $unified = [];
+    protected array $unified = [];
 
     /**
      *
@@ -219,9 +219,8 @@ class Resolver
     {
         if ($contextualBlueprints === []) {
             return call_user_func(
-                $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+                $this->getUnified($blueprint->getClassName())->merge($blueprint),
                 $this,
-                $this->reflector->getClass($blueprint->getClassName())
             );
         }
 
@@ -253,9 +252,8 @@ class Resolver
         }
 
         $resolved = call_user_func(
-            $this->expandParams($this->getUnified($blueprint->getClassName())->merge($blueprint)),
+            $this->getUnified($blueprint->getClassName())->merge($blueprint),
             $this,
-            $this->reflector->getClass($blueprint->getClassName())
         );
 
         foreach ($contextualBlueprints as $contextualBlueprint) {
@@ -272,6 +270,23 @@ class Resolver
         }
 
         return $resolved;
+    }
+
+    public function compile(): void
+    {
+        $classes = \array_unique([
+            ...\array_keys($this->params),
+            ...\array_keys($this->setters),
+            ...\array_keys($this->mutations),
+        ]);
+
+        foreach ($classes as $class) {
+            $this->getUnified($class);
+        }
+
+        $this->params = [];
+        $this->setters = [];
+        $this->mutations = [];
     }
 
     /**
@@ -298,16 +313,15 @@ class Resolver
             $spec = new Blueprint($class);
         }
 
-        // stores the unified params and setters
-        $this->unified[$class] = new Blueprint(
+        $unified = new Blueprint(
             $class,
             $this->getUnifiedParams($class, $spec->getParams()),
             $this->getUnifiedSetters($class, $spec->getSetters()),
-            $this->getUnifiedMutations($class, $spec->getMutations())
+            $this->getUnifiedMutations($class, $spec->getMutations()),
         );
 
-        // done, return the unified values
-        return $this->unified[$class];
+        // stores and returns the unified params and setters
+        return $this->unified[$class] = $unified->withParamSettings($this->getParamSettings($class));
     }
 
     /**
@@ -504,32 +518,14 @@ class Resolver
         return $unified;
     }
 
-    /**
-     * Expands variadic parameters onto the end of a contructor parameters array.
-     *
-     * @param Blueprint $blueprint The blueprint to expand parameters for.
-     *
-     * @return Blueprint The blueprint with expanded constructor parameters.
-     */
-    protected function expandParams(Blueprint $blueprint): Blueprint
+    private function getParamSettings(string $class): array
     {
-        $class = $blueprint->getClassName();
-        $params = $blueprint->getParams();
-
-        $variadicParams = [];
-        foreach ($this->reflector->getParams($class) as $reflectParam) {
-            $paramName = $reflectParam->getName();
-            if ($reflectParam->isVariadic() && is_array($params[$paramName])) {
-                $variadicParams = array_merge($variadicParams, $params[$paramName]);
-                unset($params[$paramName]);
-                break; // There can only be one
-            }
-
-            if ($params[$paramName] instanceof DefaultValueParam) {
-                $params[$paramName] = $params[$paramName]->getValue();
-            }
+        $unified = [];
+        $rparams = $this->reflector->getParams($class);
+        foreach ($rparams as $rparam) {
+            $unified[$rparam->getName()] = $rparam->isVariadic();
         }
 
-        return $blueprint->replaceParams(array_merge($params, array_values($variadicParams)));
+        return $unified;
     }
 }

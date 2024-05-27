@@ -9,7 +9,6 @@ declare(strict_types=1);
  */
 namespace Aura\Di;
 
-use Aura\Di\Injection\InjectionFactory;
 use Aura\Di\Resolver\AutoResolver;
 use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
@@ -77,8 +76,6 @@ class ContainerBuilder
      *
      * @return Container
      *
-     * @throws Exception\SetterMethodNotFound
-     *
      */
     public function newConfiguredInstance(
         array $configClasses = [],
@@ -92,6 +89,56 @@ class ContainerBuilder
         $collection->modify($di);
 
         return $di;
+    }
+
+    /**
+     *
+     * Creates a new Container, applies ContainerConfig classes to define()
+     * services, locks the container and compiles all classes into blueprints.
+     * A compiled container is ready to serialize.
+     *
+     * @param array $configClasses A list of ContainerConfig classes to
+     * instantiate and invoke for configuring the Container.
+     *
+     * @param bool $autoResolve Use the auto-resolver?
+     *
+     * @return Container
+     */
+    public function newCompiledInstance(
+        array $configClasses = [],
+        bool $autoResolve = false,
+    ): Container {
+        $resolver = $this->newResolver($autoResolve);
+        $di = new Container($resolver);
+
+        $collection = $this->newConfigCollection($configClasses);
+        $collection->define($di);
+        $collection->compile($di);
+
+        $di->lock();
+        $resolver->compile();
+
+        return $di;
+    }
+
+    /**
+     *
+     * Applies the ContainerConfig instances to modify() services onto a Container that was
+     * compiled.
+     *
+     * @param Container $container The container that has been compiled in an earlier step.
+     *
+     * @param array $configClasses A list of ContainerConfig classes to
+     * instantiate and invoke for configuring the Container.
+     *
+     * @return Container
+     */
+    public function configureCompiledInstance(
+        Container $container,
+        array $configClasses = [],
+    ): Container {
+        $this->newConfigCollection($configClasses)->modify($container);
+        return $container;
     }
 
     /**
