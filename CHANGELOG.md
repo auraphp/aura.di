@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- (CHG) Fix `lazyGet` not resolving the same service.
+
 ## 5.0.0-alpha.1
 
 - (ADD) Inject via attributes
