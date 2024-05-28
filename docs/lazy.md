@@ -244,8 +244,10 @@ $routeHandler = $container->lazyLazy(
         'process'
     ])
 );
+
+$response = $routeHandler($request, $param1, $param2);
 ```
 
 In the above example `$routeHandler` can be injected in any place that receives a `callable` and can be called freely
 because it does not have any parameters when `__invoke` is called. So, in that particular case, a `OrderController` class
-is instantiated and the `process` method is called.
+is instantiated and the `process` method is called with three given parameters.
