@@ -13,7 +13,7 @@ use Aura\Di\Resolver\Resolver;
 
 /**
  *
- * Returns a Container service when invoked.
+ * Returns any value resulting from a LazyInterface when invoked.
  *
  * @package Aura.Di
  *
@@ -65,12 +65,12 @@ class LazyLazy
 
     /**
      *
-     * Invokes the closure to create the instance.
+     * Invokes the lazy object with the resolver.
      *
-     * @return object The object created by the closure.
+     * @return mixed The value created by the lazy object
      *
      */
-    public function __invoke(): object
+    public function __invoke(): mixed
     {
         return \call_user_func($this->lazy, $this->resolver, ...$this->params);
     }
