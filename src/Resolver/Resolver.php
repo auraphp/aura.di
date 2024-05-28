@@ -103,6 +103,15 @@ class Resolver
 
     /**
      *
+     * Retains the actual service object instances.
+     *
+     * @var array
+     *
+     */
+    protected array $instances = [];
+
+    /**
+     *
      * Constructor.
      *
      * @param Reflector $reflector A collection point for Reflection data.
@@ -164,7 +173,7 @@ class Resolver
      *
      * Instantiates a service object by key, lazy-loading it as needed.
      *
-     * @param string $service The service to get.
+     * @param string $id The service to get.
      *
      * @return object
      *
@@ -172,14 +181,18 @@ class Resolver
      * does not exist.
      *
      */
-    public function getServiceInstance(string $service): object
+    public function getServiceInstance(string $id): object
     {
-        if (! isset($this->services[$service])) {
-            throw Exception::serviceNotFound($service);
+        if (isset($this->instances[$id])) {
+            return $this->instances[$id];
+        }
+
+        if (! isset($this->services[$id])) {
+            throw Exception::serviceNotFound($id);
         }
 
         // instantiate it from its definition
-        $instance = $this->services[$service];
+        $instance = $this->services[$id];
 
         // lazy-load as needed
         if ($instance instanceof LazyInterface) {
@@ -187,7 +200,20 @@ class Resolver
         }
 
         // done
-        return $instance;
+        $this->instances[$id] = $instance;
+        return $this->instances[$id];
+    }
+
+    /**
+     *
+     * Gets the list of instantiated services.
+     *
+     * @return array
+     *
+     */
+    public function getInstances(): array
+    {
+        return array_keys($this->instances);
     }
 
     /**
@@ -371,16 +397,16 @@ class Resolver
 
         // is there a positional value explicitly from the current class?
         $explicitPos = isset($this->params[$class])
-                 && array_key_exists($pos, $this->params[$class])
-                 && ! $this->params[$class][$pos] instanceof UnresolvedParam;
+            && array_key_exists($pos, $this->params[$class])
+            && ! $this->params[$class][$pos] instanceof UnresolvedParam;
         if ($explicitPos) {
             return $this->params[$class][$pos];
         }
 
         // is there a named value explicitly from the current class?
         $explicitNamed = isset($this->params[$class])
-                 && array_key_exists($name, $this->params[$class])
-                 && ! $this->params[$class][$name] instanceof UnresolvedParam;
+            && array_key_exists($name, $this->params[$class])
+            && ! $this->params[$class][$name] instanceof UnresolvedParam;
         if ($explicitNamed) {
             return $this->params[$class][$name];
         }
@@ -395,8 +421,8 @@ class Resolver
         // (there cannot be a positional parent. this is because the unified
         // values are stored by name, not position.)
         $implicitNamed = array_key_exists($name, $parent)
-                 && ! $parent[$name] instanceof UnresolvedParam
-                 && ! $parent[$name] instanceof DefaultValueParam;
+            && ! $parent[$name] instanceof UnresolvedParam
+            && ! $parent[$name] instanceof DefaultValueParam;
         if ($implicitNamed) {
             return $parent[$name];
         }

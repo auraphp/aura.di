@@ -124,6 +124,7 @@ class ContainerTest extends TestCase
         $foo = $lazy($this->resolver);
 
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $foo);
+        $this->assertSame($foo, $lazy($this->resolver));
     }
 
     public function testMagicGetNoSuchProperty()

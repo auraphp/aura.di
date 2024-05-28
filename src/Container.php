@@ -73,15 +73,6 @@ class Container implements ContainerInterface
 
     /**
      *
-     * Retains the actual service object instances.
-     *
-     * @var array
-     *
-     */
-    protected array $instances = [];
-
-    /**
-     *
      * Is the Container locked?  (When locked, you cannot access configuration
      * properties from outside the object, and cannot set services.)
      *
@@ -251,13 +242,7 @@ class Container implements ContainerInterface
     public function get(string $id): object
     {
         $this->locked = true;
-
-        if (isset($this->instances[$id])) {
-            return $this->instances[$id];
-        }
-
-        $this->instances[$id] = $this->getServiceInstance($id);
-        return $this->instances[$id];
+        return $this->getServiceInstance($id);
     }
 
     /**
@@ -274,18 +259,15 @@ class Container implements ContainerInterface
      */
     protected function getServiceInstance(string $service): object
     {
-        // does the definition exist?
-        if (! $this->has($service)) {
-            throw Exception::serviceNotFound($service);
+        if ($this->resolver->hasService($service)) {
+            return $this->resolver->getServiceInstance($service);
         }
 
-        // is it defined in this container?
-        if (!$this->resolver->hasService($service)) {
-            // no, get the instance from the delegate container
+        if ($this->has($service)) {
             return $this->delegateContainer->get($service);
         }
 
-        return $this->resolver->getServiceInstance($service);
+        throw Exception::serviceNotFound($service);
     }
 
     /**
@@ -297,7 +279,7 @@ class Container implements ContainerInterface
      */
     public function getInstances(): array
     {
-        return array_keys($this->instances);
+        return $this->resolver->getInstances();
     }
 
     /**
