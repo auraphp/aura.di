@@ -24,7 +24,22 @@ There a few API changes in the objects. They probably do not have consequences f
 exposed publicly, but the changes are listed below nonetheless.
 
 - The `InjectionFactory` now has no dependencies. The `Resolver` is not injected anymore and the `getResolver()` and `newInstance()` methods have been removed.
-- The `LazyInterface` now requires a `Resolver` to be passed to `__invoke`. Its implementations therefore also have different constructor signatures.
+- The `LazyInterface` now requires a `Resolver` to be passed to `__invoke`. Its implementations therefore also have different constructor signatures. 
+
+If you need an object that is directly invokable, without the need of passing a Resolver or any other object from the 
+container, use `$container->lazyLazy()` to create an invokable object that is injectable into an external method or class.
+
+```php
+$routeHandler = $container->lazyLazy(
+    $di->lazyCallable([
+        $di->lazyNew(OrderController::class),
+        'process'
+    ])
+);
+```
+
+In the above example `$routeHandler` can be injected in any place that receives a `callable` and can be called freely
+without any further dependency on `$container`.
 
 ### Dropped PHP 7
 

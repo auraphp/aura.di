@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- (ADD) $container->lazyLazy() to create a callable from a LazyInterface that is directly invokable. 
+
 ## 5.0.0-alpha.1
 
 - (ADD) Inject via attributes

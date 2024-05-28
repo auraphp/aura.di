@@ -40,6 +40,15 @@ class LazyLazy
 
     /**
      *
+     * Arguments for the callable.
+     *
+     * @var array
+     *
+     */
+    protected array $params;
+
+    /**
+     *
      * Constructor.
      *
      * @param Resolver $resolver The service to retrieve.
@@ -47,10 +56,11 @@ class LazyLazy
      * @param LazyInterface $lazy The service container.
      *
      */
-    public function __construct(Resolver $resolver, LazyInterface $lazy)
+    public function __construct(Resolver $resolver, LazyInterface $lazy, array $params = [])
     {
         $this->resolver = $resolver;
         $this->lazy = $lazy;
+        $this->params = $params;
     }
 
     /**
@@ -62,6 +72,6 @@ class LazyLazy
      */
     public function __invoke(): object
     {
-        return \call_user_func($this->lazy, $this->resolver);
+        return \call_user_func($this->lazy, $this->resolver, ...$this->params);
     }
 }

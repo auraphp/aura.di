@@ -214,13 +214,12 @@ class Route implements AttributeConfigInterface {
                 new RealRoute(
                     $this->method, 
                     $this->uri,
-                    new InvokableHandler(new LazyLazy(
-                        $resolver, 
-                        new Lazy([
-                            LazyNew::fromClassName($reflector->getDeclaringClass()),
+                    $container->lazyLazy(
+                        $di->lazyCallable([
+                            $di->lazyNew($reflector->getDeclaringClass()),
                             $reflector->getName()
                         ])
-                    ))
+                    )
                 )
             );
         }
