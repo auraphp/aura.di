@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased (5.x)
+## 5.0.0-alpha.1
 
 - (ADD) Inject via attributes
 - (ADD) Configure the container via attributes using the AttributeConfigInterface
