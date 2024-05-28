@@ -78,12 +78,12 @@ class InjectionFactory
      *
      * Returns a new LazyCallable.
      *
-     * @param callable $callable The callable to invoke.
+     * @param callable|array{0: LazyInterface, 1: string} $callable The callable to invoke.
      *
      * @return LazyCallable
      *
      */
-    public function newLazyCallable($callable): LazyCallable
+    public function newLazyCallable(callable|array $callable): LazyCallable
     {
         return new LazyCallable($callable);
     }

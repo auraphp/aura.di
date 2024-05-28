@@ -223,3 +223,29 @@ $di->set('service', $di->lazy($di->lazyNew('InvokableServiceClass'),
 ```
 
 Beware of relying on generic Lazy calls too much; if we do, it probably means we need to separate our configuration concerns better than we are currently doing.
+
+## Lazy lazy
+
+Since version 5, the LazyInterface `__invoke` method requires a `Resolver` to be passed.
+
+This has two advantages:
+
+1. You can instantiate a LazyInterface without needing the Resolver or the Container. This was required to implement the attributes `#[Service]`, `#[Instance]` and `#[Value]`.
+2. It reduces circular references when serializing.
+
+But, sometimes, you do need a directly invokable object, e.g. when creating a route handler. Such an object needs to be 
+invokable without passing the Resolver as a parameter. This is what the new LazyLazy solves. It wraps a LazyInterface 
+with the Resolver or Container.
+
+```php
+$routeHandler = $container->lazyLazy(
+    $container->lazyCallable([
+        $container->lazyNew(OrderController::class),
+        'process'
+    ])
+);
+```
+
+In the above example `$routeHandler` can be injected in any place that receives a `callable` and can be called freely
+because it does not have any parameters when `__invoke` is called. So, in that particular case, a `OrderController` class
+is instantiated and the `process` method is called.

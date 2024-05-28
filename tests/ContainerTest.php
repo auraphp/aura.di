@@ -185,6 +185,20 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('Aura\Di\Fake\FakeOtherClass', $callable());
     }
 
+    public function testLazyLazyParams()
+    {
+        $callable = $this->container->lazyLazy(
+            $this->container->lazyCallable([
+                $this->container->lazyNew('Aura\Di\Fake\FakeControllerClass', [
+                    'foo' => 'bar'
+                ]),
+                'process'
+            ])
+        );
+
+        $this->assertSame(4, $callable(2));
+    }
+
     public function testLazyNewWithVariadic()
     {
         // Variadics are only available in PHP >= 5.6, and not in HHVM

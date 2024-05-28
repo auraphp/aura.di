@@ -43,10 +43,10 @@ class LazyCallable implements LazyInterface
      *
      * Constructor.
      *
-     * @param callable $callable The callable to invoke.
+     * @param callable|array{0: LazyInterface, 1: string} $callable The callable to invoke.
      *
      */
-    public function __construct($callable)
+    public function __construct(callable|array $callable)
     {
         $this->callable = $callable;
     }

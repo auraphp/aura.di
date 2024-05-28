@@ -27,10 +27,10 @@ exposed publicly, but the changes are listed below nonetheless.
 - The `LazyInterface` now requires a `Resolver` to be passed to `__invoke`. Its implementations therefore also have different constructor signatures. 
 
 If you need an object that is directly invokable, without the need of passing a Resolver or any other object from the 
-container, use `$container->lazyLazy()` to create an invokable object that is injectable into an external method or class.
+container, use [`$container->lazyLazy()`](lazy.md#lazy-lazy) to create an invokable object that is injectable into an external method or class.
 
 ```php
-$routeHandler = $container->lazyLazy(
+$routeHandler = $di->lazyLazy(
     $di->lazyCallable([
         $di->lazyNew(OrderController::class),
         'process'
