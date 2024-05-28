@@ -3,6 +3,7 @@
 ## Unreleased
 
 - (ADD) $container->lazyLazy() to create a callable from a LazyInterface that is directly invokable. 
+- (CHG) Fix `lazyGet` not resolving the same service.
 
 ## 5.0.0-alpha.1
 
