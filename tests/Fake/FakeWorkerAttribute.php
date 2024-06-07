@@ -14,13 +14,19 @@ class FakeWorkerAttribute implements AttributeConfigInterface
         $this->someSetting = $someSetting;
     }
 
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void
+    public function define(
+        Container $di,
+        object $attribute,
+        string $className,
+        int $attributeTarget,
+        array $targetConfig
+    ): void
     {
-        if ($annotatedTo instanceof \ReflectionClass) {
+        if ($attributeTarget === \Attribute::TARGET_CLASS) {
             $di->values['worker'] = $di->values['worker'] ?? [];
             $di->values['worker'][] = [
                 'someSetting' => $this->someSetting,
-                'className' => $annotatedTo->getName(),
+                'className' => $className,
             ];
         }
     }

@@ -12,5 +12,11 @@ namespace Aura\Di;
 
 interface AttributeConfigInterface
 {
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void;
+    public function define(
+        Container $di,
+        object $attribute,
+        string $className,
+        int $attributeTarget,
+        array $targetConfig
+    ): void;
 }

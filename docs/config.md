@@ -175,14 +175,14 @@ The following example demonstrates how to scan your project source files for ann
 controllers, services and repository classes into a blueprints.
 
 ```php
-use Aura\Di\ClassScanner;
+use Aura\Di\ClassScanner\ClassScannerConfig;
 use Aura\Di\ContainerBuilder;
 
 $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    new ClassScanner(
+    ClassScannerConfig::newScanner(
         [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
         ['MyApp\\Controller\\', 'MyApp\\Service\\', 'MyApp\\Repository\\'], // classes inside these namespaces should be compiled
     )
@@ -195,27 +195,44 @@ When using the `ClassScanner`, make sure to serialize and cache the container ou
 not do that, directories will be scanned every instance of the container.
 
 If your attribute cannot implement the `AttributeConfigInterface`, e.g. the attribute is defined in an external package, 
-you can pass a map with the class name of the attribute and an implementation of `AttributeConfigInterface`.
+you can create an implementation of `AttributeConfigInterface` yourself, and annotate it with `#[DefineAttribute(ExternalAttribute::class)]`.
+Then the class scanner will automatically pick up the annotation.
 
 ```php
 use Aura\Di\AttributeConfigInterface;
+use Aura\Di\Attribute\DefineAttribute;
+use Aura\Di\ClassScanner\ClassScannerConfig;
+use Aura\Di\Container;
+use Symfony\Component\Routing\Attribute\Route;
 
-new ClassScanner(
+ClassScannerConfig::newScanner(
     [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
     ['MyApp\\'], // classes inside these namespaces should be compiled,
-    [
-        Symfony\Component\Routing\Attribute\Route::class => new SymfonyRouteAttributeConfig()
-    ]
 )
 
+#[DefineAttribute(Route::class)]
 class SymfonyRouteAttributeConfig implements AttributeConfigInterface
 {
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void
+    public function define(
+        Container $di,
+        object $attribute,
+        string $className,
+        int $attributeTarget,
+        array $targetConfig
+    ): void
     {
-        if ($annotatedTo instanceof ReflectionMethod) {
-            $route = $attribute->newInstance();
+        if ($attributeTarget === \Attribute::TARGET_METHOD) {
+            $invokableRoute = $di->lazyCallable([
+                $container->lazyNew($className),
+                $targetConfig['method']
+            ]);
+            
+            // these are not real parameters, but just examples
             $di->values['routes'][] = new Symfony\Component\Routing\Route(
-                // ...
+                $attribute->getPath(),
+                $attribute->getMethods(),
+                $attribute->getName(),
+                $invokableRoute
             );
         }
     }

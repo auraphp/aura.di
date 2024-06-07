@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Resolver;
 
+use Aura\Di\ClassScanner\AnnotatedAttribute;
 use ReflectionClass;
 use ReflectionException;
 
@@ -144,5 +145,81 @@ class Reflector
         }
 
         return $this->traits[$class];
+    }
+
+    /**
+     * @param string $className
+     * @return \Generator<int, AnnotatedAttribute>
+     * @throws ReflectionException
+     */
+    public function yieldAttributes(string $className): \Generator
+    {
+        $reflectionClass = $this->getClass($className);
+        foreach ($reflectionClass->getAttributes() as $attribute) {
+            yield from $this->configureAttribute(
+                $attribute,
+                $className,
+                \Attribute::TARGET_CLASS
+            );
+        }
+
+        $methods = $reflectionClass->getMethods();
+        foreach ($methods as $method) {
+            $parameters = $method->getParameters();
+            foreach ($parameters as $parameter) {
+                foreach ($parameter->getAttributes() as $attribute) {
+                    yield from $this->configureAttribute(
+                        $attribute,
+                        $className,
+                        \Attribute::TARGET_PARAMETER,
+                        [
+                            'method' => $method->getName(),
+                            'parameter' => $parameter->getName(),
+                        ]
+                    );
+                }
+            }
+        }
+
+        $properties = $reflectionClass->getProperties();
+        foreach ($properties as $property) {
+            foreach ($property->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_PROPERTY,
+                    ['property' => $property->getName()],
+                );
+            }
+        }
+
+        $constants = $reflectionClass->getConstants();
+        /** @var \ReflectionClassConstant $constant */
+        foreach ($constants as $constant) {
+            foreach ($constant->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_CLASS_CONSTANT,
+                    ['constant' => $constant->getName()],
+                );
+            }
+        }
+    }
+
+    public function configureAttribute(
+        \ReflectionAttribute $attribute,
+        string $className,
+        int $targetMethod,
+        array $targetConfig = []
+    ): \Generator
+    {
+        $instance = $attribute->newInstance();
+        yield new AnnotatedAttribute(
+            $instance,
+            $className,
+            $targetMethod,
+            $targetConfig
+        );
     }
 }

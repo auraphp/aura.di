@@ -1,6 +1,7 @@
 <?php
 namespace Aura\Di;
 
+use Aura\Di\ClassScanner\ClassScannerConfig;
 use Aura\Di\Fake\FakeInjectAnnotatedWithClass;
 use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
@@ -9,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 class ClassScannerTest extends TestCase
 {
     /**
-     * @var ClassScanner
+     * @var ClassScannerConfig
      */
     protected $config;
 
@@ -17,7 +18,7 @@ class ClassScannerTest extends TestCase
     {
         parent::setUp();
 
-        $this->config = new ClassScanner(
+        $this->config = ClassScannerConfig::newScanner(
             [__DIR__ . '/Fake'],
             ['Aura\Di\Fake'],
         );

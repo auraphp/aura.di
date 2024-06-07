@@ -205,9 +205,15 @@ class Route implements AttributeConfigInterface {
     public function __construct(private string $method, private string $uri) {
     }
     
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void
+    public function define(
+        Container $di,
+        object $attribute,
+        string $className,
+        int $attributeTarget,
+        array $targetConfig
+    ): void
     {
-        if ($reflector instanceof \ReflectionMethod) {
+        if ($attributeTarget === \Attribute::TARGET_METHOD) {
             // considering the routes key is a lazy array, defined like this
             // $resolver->values['routes'] = $container->lazyArray([]);
             $di->values['routes']->append(
@@ -216,8 +222,8 @@ class Route implements AttributeConfigInterface {
                     $this->uri,
                     $container->lazyLazy(
                         $di->lazyCallable([
-                            $di->lazyNew($reflector->getDeclaringClass()),
-                            $reflector->getName()
+                            $di->lazyNew($className),
+                            $targetConfig['method']
                         ])
                     )
                 )

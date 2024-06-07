@@ -1,6 +1,7 @@
 <?php
 namespace Aura\Di;
 
+use Aura\Di\ClassScanner\ClassScannerConfig;
 use Aura\Di\Fake\FakeConstructAttributeClass;
 use Aura\Di\Fake\FakeInjectAnnotatedWithClass;
 use Aura\Di\Fake\FakeInterfaceClass1;
@@ -168,7 +169,7 @@ class ContainerBuilderTest extends TestCase
             new \Aura\Di\Fake\FakeLibraryConfig,
             new \Aura\Di\Fake\FakeProjectConfig,
             new \Aura\Di\Fake\FakeCompilationTestConfig(),
-            new ClassScanner(
+            ClassScannerConfig::newScanner(
                 [__DIR__ . '/Fake'],
                 ['Aura\Di\Fake'],
             )

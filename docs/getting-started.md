@@ -77,15 +77,14 @@ composer require composer/class-map-generator
 Creating a fully-featured container could look as follows:
 
 ```php
+use Aura\Di\ClassScanner\ClassScannerConfig;
 use Aura\Di\ContainerBuilder;
-use Aura\Di\ClassScanner;
-use Aura\Di\Resolver\ResolverFactory;
 
 $serializedContainerFile = '/var/compiled.ser';
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    new ClassScanner(
+    ClassScannerConfig::newScanner(
         [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
         ['MyApp\\'], // classes inside these namespaces should be compiled
     )
