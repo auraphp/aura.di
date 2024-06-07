@@ -17,7 +17,7 @@ class FakeWorkerAttribute implements AttributeConfigInterface
     public function define(
         Container $di,
         object $attribute,
-        string $className,
+        string $annotatedClassName,
         int $attributeTarget,
         array $targetConfig
     ): void
@@ -26,7 +26,7 @@ class FakeWorkerAttribute implements AttributeConfigInterface
             $di->values['worker'] = $di->values['worker'] ?? [];
             $di->values['worker'][] = [
                 'someSetting' => $this->someSetting,
-                'className' => $className,
+                'className' => $annotatedClassName,
             ];
         }
     }

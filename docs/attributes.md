@@ -208,7 +208,7 @@ class Route implements AttributeConfigInterface {
     public function define(
         Container $di,
         object $attribute,
-        string $className,
+        string $annotatedClassName,
         int $attributeTarget,
         array $targetConfig
     ): void
@@ -222,7 +222,7 @@ class Route implements AttributeConfigInterface {
                     $this->uri,
                     $container->lazyLazy(
                         $di->lazyCallable([
-                            $di->lazyNew($className),
+                            $di->lazyNew($annotatedClassName),
                             $targetConfig['method']
                         ])
                     )

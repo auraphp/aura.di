@@ -165,6 +165,17 @@ class Reflector
 
         $methods = $reflectionClass->getMethods();
         foreach ($methods as $method) {
+            foreach ($method->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_METHOD,
+                    [
+                        'method' => $method->getName(),
+                    ]
+                );
+            }
+
             $parameters = $method->getParameters();
             foreach ($parameters as $parameter) {
                 foreach ($parameter->getAttributes() as $attribute) {

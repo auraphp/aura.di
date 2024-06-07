@@ -12,10 +12,22 @@ namespace Aura\Di;
 
 interface AttributeConfigInterface
 {
+    /**
+     * @param Container $di The container.
+     *
+     * @param object $attribute The instance of the attribute
+     *
+     * @param string $annotatedClassName The class that has been annotated.
+     *
+     * @param int $attributeTarget One the \Attribute::TARGET_ constants.
+     *
+     * @param array{'method'?: string, 'constant'?: string, 'parameter'?: string, 'property'?: string} $targetConfig The
+     * target configuration depends on the $attributeTarget
+     */
     public function define(
         Container $di,
         object $attribute,
-        string $className,
+        string $annotatedClassName,
         int $attributeTarget,
         array $targetConfig
     ): void;

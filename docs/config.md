@@ -216,14 +216,14 @@ class SymfonyRouteAttributeConfig implements AttributeConfigInterface
     public function define(
         Container $di,
         object $attribute,
-        string $className,
+        string $annotatedClassName,
         int $attributeTarget,
         array $targetConfig
     ): void
     {
         if ($attributeTarget === \Attribute::TARGET_METHOD) {
             $invokableRoute = $di->lazyCallable([
-                $container->lazyNew($className),
+                $container->lazyNew($annotatedClassName),
                 $targetConfig['method']
             ]);
             
