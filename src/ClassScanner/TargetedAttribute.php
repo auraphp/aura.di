@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aura\Di\ClassScanner;
 
-final class AnnotatedAttribute
+final class TargetedAttribute
 {
     private object $attributeInstance;
     private string $className;

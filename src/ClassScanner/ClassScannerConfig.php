@@ -48,8 +48,9 @@ class ClassScannerConfig implements ContainerConfigInterface
 
     public function define(Container $di): void
     {
-        $classmap = $this->mapGenerator->generate()->getClassMap();
-        foreach ($classmap as $className => $annotatedAttributes) {
+        $classMap = $this->mapGenerator->generate();
+        foreach ($classMap->getClasses() as $className) {
+            $annotatedAttributes = $classMap->getTargetedAttributesFor($className);
             foreach ($this->injectNamespaces as $namespace) {
                 if (\str_starts_with($className, $namespace)) {
                     $di->params[$className] = $di->params[$className] ?? [];
@@ -71,7 +72,7 @@ class ClassScannerConfig implements ContainerConfigInterface
         }
     }
 
-    private function configureAttribute(Container $di, AnnotatedAttribute $annotatedAttribute, array $configuration): void
+    private function configureAttribute(Container $di, TargetedAttribute $annotatedAttribute, array $configuration): void
     {
         $attribute = $annotatedAttribute->getAttributeInstance();
         if ($attribute instanceof AttributeConfigInterface) {

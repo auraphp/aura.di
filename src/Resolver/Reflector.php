@@ -9,7 +9,7 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Resolver;
 
-use Aura\Di\ClassScanner\AnnotatedAttribute;
+use Aura\Di\ClassScanner\TargetedAttribute;
 use ReflectionClass;
 use ReflectionException;
 
@@ -149,7 +149,7 @@ class Reflector
 
     /**
      * @param string $className
-     * @return \Generator<int, AnnotatedAttribute>
+     * @return \Generator<int, TargetedAttribute>
      * @throws ReflectionException
      */
     public function yieldAttributes(string $className): \Generator
@@ -226,7 +226,7 @@ class Reflector
     ): \Generator
     {
         $instance = $attribute->newInstance();
-        yield new AnnotatedAttribute(
+        yield new TargetedAttribute(
             $instance,
             $className,
             $targetMethod,

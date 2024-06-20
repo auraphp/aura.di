@@ -6,18 +6,28 @@ namespace Aura\Di\ClassScanner;
 
 final class ClassMap
 {
+    private array $files = [];
     private array $classes = [];
 
     public function addClass(string $class, string $filename, array $annotatedAttributes): void
     {
-        $this->classes[$filename][$class] = $annotatedAttributes;
+        $this->files[$filename] = $class;
+        $this->classes[$class] = $annotatedAttributes;
     }
 
     /**
-     * @return array<class-string, array<int, AnnotatedAttribute>>
+     * @return array<int, class-string>
      */
-    public function getClassMap(): array
+    public function getClasses(): array
     {
-        return \array_merge([], ...\array_values($this->classes));
+        return \array_keys($this->classes);
+    }
+
+    /**
+     * @return array<int, TargetedAttribute>
+     */
+    public function getTargetedAttributesFor(string $className): array
+    {
+        return $this->classes[$className] ?? [];
     }
 }
