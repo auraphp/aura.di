@@ -36,10 +36,9 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
 
                 $deleted = [];
                 foreach ($cacheContentsJson['filetimes'] as $filename => $cacheModTime) {
-                    $currentModTime = \filemtime($filename);
-                    if ($currentModTime === false) {
+                    if (\is_file($filename) === false) {
                         $deleted[] = $filename;
-                    } elseif ($currentModTime === $cacheModTime) {
+                    } elseif (\filemtime($filename) === $cacheModTime) {
                         $skipFiles[] = $filename;
                     }
                 }
