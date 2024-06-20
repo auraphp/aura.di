@@ -102,11 +102,11 @@ class ClassScannerConfig implements ContainerConfigInterface
     }
 
     /**
-     * @param array $classMapPaths
+     * @param array $classMapPaths Paths to scan for classes and attributes.
      *
-     * @param array $injectNamespaces
+     * @param array $injectNamespaces Namespaces to create blueprints for.
      *
-     * @param string|null $excluded
+     * @param string|null $excluded Regex for file exclusions.
      *
      * @return self
      */
@@ -117,6 +117,32 @@ class ClassScannerConfig implements ContainerConfigInterface
     ): self {
         return new self(
             new ComposerMapGenerator($classMapPaths, $excluded),
+            $injectNamespaces,
+        );
+    }
+
+    /**
+     * @param string $cacheFile File that keeps the file modification times of all classes.
+     *
+     * @param array $classMapPaths Namespaces to create blueprints for.
+     *
+     * @param array $injectNamespaces Regex for file exclusions.
+     *
+     * @param string|null $excluded
+     *
+     * @return self
+     */
+    public static function newCachedScanner(
+        string $cacheFile,
+        array $classMapPaths,
+        array $injectNamespaces = [],
+        ?string $excluded = null
+    ): self {
+        return new self(
+            new CachedFileModificationGenerator(
+                new ComposerMapGenerator($classMapPaths, $excluded),
+                $cacheFile
+            ),
             $injectNamespaces,
         );
     }
