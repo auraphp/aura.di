@@ -6,5 +6,5 @@ namespace Aura\Di\ClassScanner;
 
 interface MapGeneratorInterface
 {
-    public function generate(): ClassMap;
+    public function generate(?array $skipFiles = null): ClassMap;
 }

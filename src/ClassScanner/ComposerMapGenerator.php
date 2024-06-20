@@ -5,6 +5,7 @@ namespace Aura\Di\ClassScanner;
 
 use Aura\Di\Resolver\Reflector;
 use Composer\ClassMapGenerator\ClassMapGenerator;
+use Composer\ClassMapGenerator\FileList;
 
 final class ComposerMapGenerator implements MapGeneratorInterface
 {
@@ -14,31 +15,41 @@ final class ComposerMapGenerator implements MapGeneratorInterface
 
     public function __construct(
         array $paths,
-        ?string $excluded,
+        ?string $excluded = null,
     ) {
         $this->paths = $paths;
         $this->excluded = $excluded;
         $this->reflector = new Reflector();
     }
 
-    public function generate(): ClassMap
+    public function generate(?array $skipFiles = null): ClassMap
     {
         $generator = new ClassMapGenerator();
-        $generator->avoidDuplicateScans();
+        if ($skipFiles === null) {
+            $generator->avoidDuplicateScans();
+        } else {
+            $fileList = new FileList();
+            $fileList->files = $skipFiles;
+            $generator->avoidDuplicateScans($fileList);
+        }
+
         foreach ($this->paths as $path) {
             $generator->scanPaths($path, $this->excluded);
         }
-        $composerMap = $generator->getClassMap()->getMap();
 
-        $map = new ClassMap();
+        return $this->convertToClassMap(new ClassMap(), $generator->getClassMap()->getMap());
+    }
+
+    private function convertToClassMap(ClassMap $classMap, array $composerMap): ClassMap
+    {
         foreach ($composerMap as $class => $path) {
-            $map->addClass(
+            $classMap->addClass(
                 $class,
                 $path,
                 [...$this->reflector->yieldAttributes($class)]
             );
         }
 
-        return $map;
+        return $classMap;
     }
 }
