@@ -28,7 +28,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                 \flock($cacheFileHandle, LOCK_EX);
                 $cacheContents = \stream_get_contents($cacheFileHandle);
                 $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
-                $classMap = $this->readClassMapFromCacheFile($cacheContentsJson);
+                $classMap = $this->readClassMapFromCacheJson($cacheContentsJson);
 
                 if ($skipFiles === null) {
                     $skipFiles = [];
@@ -53,7 +53,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                 \flock($cacheFileHandle, \LOCK_SH);
                 $cacheContents = \stream_get_contents($cacheFileHandle);
                 $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
-                $classMap = $this->readClassMapFromCacheFile($cacheContentsJson);
+                $classMap = $this->readClassMapFromCacheJson($cacheContentsJson);
             }
         } else {
             \flock($cacheFileHandle, LOCK_EX);
@@ -68,7 +68,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
     /**
      * @throws \JsonException
      */
-    private function readClassMapFromCacheFile(array $cacheContentsJson): ClassMap
+    private function readClassMapFromCacheJson(array $cacheContentsJson): ClassMap
     {
         $classMap = new ClassMap();
 
