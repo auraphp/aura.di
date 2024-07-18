@@ -24,7 +24,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
     {
         $cacheFileHandle = \fopen($this->cacheFilename, 'a+');
         if (\fstat($cacheFileHandle)['size'] > 0) {
-            if (\filemtime($this->cacheFilename) + $this->debounceMs <= \time()) {
+            if (\filemtime($this->cacheFilename) + ($this->debounceMs / 1000) <= \time()) {
                 \flock($cacheFileHandle, LOCK_EX);
                 $cacheContents = \stream_get_contents($cacheFileHandle);
                 $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
@@ -80,7 +80,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                 $filename,
                 \array_map(
                     fn (string $serializedAttributeSpecification) => \unserialize($serializedAttributeSpecification),
-                    $cacheContentsJson['attributes'][$className]
+                    $cacheContentsJson['attributes'][$className] ?? []
                 )
             );
         }
@@ -98,12 +98,15 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
         foreach ($classMap->getFileToClassMap() as $filename => $className) {
             $classMapJson['files'][$filename] = $className;
             $classMapJson['filetimes'][$filename] = $filetimes[$filename] ?? \filemtime($filename);
-            $classMapJson['attributes'][$className] = \array_map(
-                fn (AttributeSpecification $attribute) => \serialize($attribute),
-                $classMap->getAttributeSpecificationsFor($className)
-            );
+
+            if ($attributeSpecifications = $classMap->getAttributeSpecificationsFor($className)) {
+                $classMapJson['attributes'][$className] = \array_map(
+                    fn (AttributeSpecification $attribute) => \serialize($attribute),
+                    $attributeSpecifications
+                );
+            }
         }
         \ftruncate($fileHandle, 0);
-        \fwrite($fileHandle, \json_encode($classMapJson, \JSON_THROW_ON_ERROR));
+        \fwrite($fileHandle, \json_encode($classMapJson, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES));
     }
 }
