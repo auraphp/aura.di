@@ -309,10 +309,6 @@ class Resolver
         foreach ($classes as $class) {
             $this->getUnified($class);
         }
-
-        $this->params = [];
-        $this->setters = [];
-        $this->mutations = [];
     }
 
     /**
