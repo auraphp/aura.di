@@ -52,7 +52,7 @@ class CachedFileModificationGeneratorTest extends TestCase
 
         $classMap2 = $cachedFileModificationGenerator->generate();
         $this->assertContains($newClassName, $classMap2->getClasses());
-        $this->assertCount(1, $classMap2->getTargetedAttributesFor($newClassName));
+        $this->assertCount(1, $classMap2->getAttributeSpecificationsFor($newClassName));
     }
 
     public function testDebounce()
@@ -83,7 +83,7 @@ class CachedFileModificationGeneratorTest extends TestCase
 
         $classMap3 = $cachedFileModificationGenerator->generate();
         $this->assertContains($newClassName, $classMap3->getClasses());
-        $this->assertCount(1, $classMap3->getTargetedAttributesFor($newClassName));
+        $this->assertCount(1, $classMap3->getAttributeSpecificationsFor($newClassName));
     }
 
     public function testUpdatingClass()
@@ -112,7 +112,7 @@ class CachedFileModificationGeneratorTest extends TestCase
 
         $classMap2 = $cachedFileModificationGenerator->generate();
         $this->assertContains($newClassName, $classMap2->getClasses());
-        $this->assertCount(1, $classMap2->getTargetedAttributesFor($newClassName));
+        $this->assertCount(1, $classMap2->getAttributeSpecificationsFor($newClassName));
 
         $afterTouchTime = \json_decode(\file_get_contents($cacheFile), true)['filetimes'][$this->dir . '/NewFile' . $classSuffix . '.php'];
         $this->assertNotSame($beforeTouchTime, $afterTouchTime);

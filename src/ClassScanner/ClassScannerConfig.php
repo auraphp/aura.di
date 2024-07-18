@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Aura\Di\ClassScanner;
 
-use Aura\Di\Attribute\DefineAttribute;
-use Aura\Di\AttributeConfigInterface;
+use Aura\Di\Attribute\AttributeConfigFor;
 use Aura\Di\Container;
 use Aura\Di\ContainerConfigInterface;
+use Aura\Di\Fake\FakeConstructAttributeClass;
 
 class ClassScannerConfig implements ContainerConfigInterface
 {
@@ -49,51 +49,34 @@ class ClassScannerConfig implements ContainerConfigInterface
     public function define(Container $di): void
     {
         $classMap = $this->mapGenerator->generate();
+
+        $configuration = [];
+        foreach ($classMap->getAttributeSpecifications() as $specification) {
+            $attribute = $specification->getAttributeInstance();
+            $attributeConfigClass = $specification->getClassName();
+            if ($attribute instanceof AttributeConfigFor && \is_a($attributeConfigClass, AttributeConfigInterface::class, true)) {
+                $configFor = $attribute->getClassName();
+                $configuration[$configFor] = $attributeConfigClass;
+            }
+        }
+
         foreach ($classMap->getClasses() as $className) {
-            $annotatedAttributes = $classMap->getTargetedAttributesFor($className);
             foreach ($this->injectNamespaces as $namespace) {
                 if (\str_starts_with($className, $namespace)) {
                     $di->params[$className] = $di->params[$className] ?? [];
                 }
             }
 
-            $configuration = [];
-            foreach ($annotatedAttributes as $annotatedAttribute) {
-                $attribute = $annotatedAttribute->getAttributeInstance();
-                if ($attribute instanceof DefineAttribute) {
-                    $attributeConfigClass = $annotatedAttribute->getClassName();
-                    $configuration[$attribute->getClassName()] = new $attributeConfigClass();
+            foreach ($classMap->getAttributeSpecificationsFor($className) as $specification) {
+                $attribute = $specification->getAttributeInstance();
+                if (\array_key_exists($attribute::class, $configuration)) {
+                    $configuredBy = $configuration[$attribute::class];
+                    $configuredBy::define(
+                        $di,
+                        $specification,
+                    );
                 }
             }
-
-            foreach ($annotatedAttributes as $annotatedAttribute) {
-                $this->configureAttribute($di, $annotatedAttribute, $configuration);
-            }
-        }
-    }
-
-    private function configureAttribute(Container $di, TargetedAttribute $annotatedAttribute, array $configuration): void
-    {
-        $attribute = $annotatedAttribute->getAttributeInstance();
-        if ($attribute instanceof AttributeConfigInterface) {
-            $attribute->define(
-                $di,
-                $attribute,
-                $annotatedAttribute->getClassName(),
-                $annotatedAttribute->getAttributeTarget(),
-                $annotatedAttribute->getTargetConfig()
-            );
-            return;
-        }
-
-        if (\array_key_exists($attribute::class, $configuration)) {
-            $configuration[$attribute->getName()]->define(
-                $di,
-                $attribute,
-                $annotatedAttribute->getClassName(),
-                $annotatedAttribute->getAttributeTarget(),
-                $annotatedAttribute->getTargetConfig()
-            );
         }
     }
 

@@ -38,11 +38,19 @@ final class ClassMap
     }
 
     /**
-     * @return array<int, TargetedAttribute>
+     * @return array<int, AttributeSpecification>
      */
-    public function getTargetedAttributesFor(string $className): array
+    public function getAttributeSpecificationsFor(string $className): array
     {
         return $this->classesToAttributes[$className] ?? [];
+    }
+
+    /**
+     * @return array<int, AttributeSpecification>
+     */
+    public function getAttributeSpecifications(): array
+    {
+        return \array_merge([], ...array_values($this->classesToAttributes));
     }
 
     public function merge(ClassMap $other): ClassMap

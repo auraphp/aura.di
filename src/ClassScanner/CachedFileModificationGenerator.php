@@ -38,7 +38,9 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                 foreach ($cacheContentsJson['filetimes'] as $filename => $cacheModTime) {
                     if (\is_file($filename) === false) {
                         $deleted[] = $filename;
-                    } elseif (\filemtime($filename) === $cacheModTime) {
+                    } elseif (($newTime = \filemtime($filename)) !== $cacheModTime) {
+                        $cacheContentsJson['filetimes'][$filename] = $newTime;
+                    } else {
                         $skipFiles[] = $filename;
                     }
                 }
@@ -48,7 +50,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                     $classMap->remove($filename);
                 }
 
-                $this->writeClassMapToFileHandle($cacheFileHandle, $classMap);
+                $this->writeClassMapToFileHandle($cacheFileHandle, $classMap, $cacheContentsJson['filetimes']);
             } else {
                 \flock($cacheFileHandle, \LOCK_SH);
                 $cacheContents = \stream_get_contents($cacheFileHandle);
@@ -77,7 +79,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
                 $className,
                 $filename,
                 \array_map(
-                    fn (string $serializedTargetedAttribute) => \unserialize($serializedTargetedAttribute),
+                    fn (string $serializedAttributeSpecification) => \unserialize($serializedAttributeSpecification),
                     $cacheContentsJson['attributes'][$className]
                 )
             );
@@ -86,7 +88,7 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
         return $classMap;
     }
 
-    private function writeClassMapToFileHandle($fileHandle, ClassMap $classMap): void
+    private function writeClassMapToFileHandle($fileHandle, ClassMap $classMap, array $filetimes = []): void
     {
         $classMapJson = [
             'files' => [],
@@ -95,10 +97,10 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
         ];
         foreach ($classMap->getFileToClassMap() as $filename => $className) {
             $classMapJson['files'][$filename] = $className;
-            $classMapJson['filetimes'][$filename] = \filemtime($filename);
+            $classMapJson['filetimes'][$filename] = $filetimes[$filename] ?? \filemtime($filename);
             $classMapJson['attributes'][$className] = \array_map(
-                fn (TargetedAttribute $attribute) => \serialize($attribute),
-                $classMap->getTargetedAttributesFor($className)
+                fn (AttributeSpecification $attribute) => \serialize($attribute),
+                $classMap->getAttributeSpecificationsFor($className)
             );
         }
         \ftruncate($fileHandle, 0);

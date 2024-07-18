@@ -194,51 +194,6 @@ $di = $builder->newCompiledInstance($config_classes);
 When using the `ClassScanner`, make sure to serialize and cache the container output. If you do
 not do that, directories will be scanned every instance of the container.
 
-If your attribute cannot implement the `AttributeConfigInterface`, e.g. the attribute is defined in an external package, 
-you can create an implementation of `AttributeConfigInterface` yourself, and annotate it with `#[DefineAttribute(ExternalAttribute::class)]`.
-Then the class scanner will automatically pick up the annotation.
-
-```php
-use Aura\Di\AttributeConfigInterface;
-use Aura\Di\Attribute\DefineAttribute;
-use Aura\Di\ClassScanner\ClassScannerConfig;
-use Aura\Di\Container;
-use Symfony\Component\Routing\Attribute\Route;
-
-ClassScannerConfig::newScanner(
-    [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
-    ['MyApp\\'], // classes inside these namespaces should be compiled,
-)
-
-#[DefineAttribute(Route::class)]
-class SymfonyRouteAttributeConfig implements AttributeConfigInterface
-{
-    public function define(
-        Container $di,
-        object $attribute,
-        string $annotatedClassName,
-        int $attributeTarget,
-        array $targetConfig
-    ): void
-    {
-        if ($attributeTarget === \Attribute::TARGET_METHOD) {
-            $invokableRoute = $di->lazyCallable([
-                $container->lazyNew($annotatedClassName),
-                $targetConfig['method']
-            ]);
-            
-            // these are not real parameters, but just examples
-            $di->values['routes'][] = new Symfony\Component\Routing\Route(
-                $attribute->getPath(),
-                $attribute->getMethods(),
-                $attribute->getName(),
-                $invokableRoute
-            );
-        }
-    }
-}
-```
-
 ## Compiled objects inside the container
 
 There might be other objects that you want to compile before serializing the container. A good example might be a 

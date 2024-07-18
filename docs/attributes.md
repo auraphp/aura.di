@@ -186,44 +186,42 @@ $di->params['Example']['foo'] = $di->lazyGetCall('config', 'get', 'alpha');
 
 Modifying the container with attributes requires building the container with the
 [`ClassScanner`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
-passed directories for classes and annotations. Every attribute that implements the `AttributeConfigInterface` can modify the
-container. See the [`ClassScanner` documentation](config.md#scan-for-classes-and-annotations) how to 
-modify the container for external attributes.
+passed directories for classes and annotations. Every class that is annotated with `#[AttributeConfigFor]`
+and implements `AttributeConfigInterface` can modify the container.
 
-In the following example we create our own a `#[Route]` attribute that implements the `AttributeConfigInterface` and 
-annotate methods with it inside a `Controller` class.
+In the following example we create our own a `#[Route]` attribute that also implements the `AttributeConfigInterface`. 
+The attribute `#[AttributeConfigFor]` is referencing the Route class. It is basically a self-reference because the attribute is
+attached to the Route class. Now, methods annotated with the new `#[Route]`
+will cause a `RealRoute` to be appended in the routes array.
+
 
 ```php
-use Aura\Di\AttributeConfigInterface;
+use Aura\Di\Attribute\AttributeConfigFor;
+use Aura\Di\ClassScanner\AttributeConfigInterface;
+use Aura\Di\ClassScanner\AttributeSpecification;
 use Aura\Di\Container;
-use Aura\Di\Injection\Lazy;
-use Aura\Di\Injection\LazyLazy;
-use Aura\Di\Injection\LazyNew;
 
 #[\Attribute]
+#[AttributeConfigFor(Route::class)]
 class Route implements AttributeConfigInterface {
     public function __construct(private string $method, private string $uri) {
     }
     
-    public function define(
-        Container $di,
-        object $attribute,
-        string $annotatedClassName,
-        int $attributeTarget,
-        array $targetConfig
-    ): void
+    public static function define(Container $di, AttributeSpecification $specification): void
     {
-        if ($attributeTarget === \Attribute::TARGET_METHOD) {
+        if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
+            /** @var self $attribute */
+            $attribute = $specification->getAttributeInstance();
             // considering the routes key is a lazy array, defined like this
             // $resolver->values['routes'] = $container->lazyArray([]);
             $di->values['routes']->append(
                 new RealRoute(
-                    $this->method, 
-                    $this->uri,
+                    $attribute->method, 
+                    $attribute->uri,
                     $container->lazyLazy(
                         $di->lazyCallable([
-                            $di->lazyNew($annotatedClassName),
-                            $targetConfig['method']
+                            $di->lazyNew($specification->getClassName()),
+                            $specification->getTargetConfig()['method']
                         ])
                     )
                 )
@@ -245,8 +243,43 @@ class RouterFactory {
         #[Value('routes')]
         private array $routes
     ) {
+        // $routes contains an array of RealRoute objects
     }
 }
 ```
 
-The `$routes` parameter in the RouterFactory would result in an array of `RealRoute` objects being injected.
+If your attribute cannot implement the `AttributeConfigInterface`, e.g. the attribute is defined in an external package,
+you can create an implementation of `AttributeConfigInterface` yourself, and annotate it with `#[AttributeConfigFor(ExternalAttribute::class)]`.
+
+```php
+use Aura\Di\Attribute\AttributeConfigFor;
+use Aura\Di\ClassScanner\AttributeConfigInterface;
+use Aura\Di\ClassScanner\AttributeSpecification;
+use Aura\Di\Container;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AttributeConfigFor(Route::class)]
+class SymfonyRouteAttributeConfig implements AttributeConfigInterface
+{
+    public static function define(Container $di, AttributeSpecification $specification): void
+    {
+        if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
+            /** @var Route $attribute */
+            $attribute = $specification->getAttributeInstance();
+            
+            $invokableRoute = $di->lazyCallable([
+                $container->lazyNew($annotatedClassName),
+                $specification->getTargetConfig()['method']
+            ]);
+            
+            // these are not real parameters, but just examples
+            $di->values['routes'][] = new Symfony\Component\Routing\Route(
+                $attribute->getPath(),
+                $attribute->getMethods(),
+                $attribute->getName(),
+                $invokableRoute
+            );
+        }
+    }
+}
+```

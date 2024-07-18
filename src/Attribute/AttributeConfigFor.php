@@ -13,7 +13,7 @@ namespace Aura\Di\Attribute;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class DefineAttribute
+class AttributeConfigFor
 {
     private string $className;
 
