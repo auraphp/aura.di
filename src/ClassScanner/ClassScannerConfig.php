@@ -7,7 +7,6 @@ namespace Aura\Di\ClassScanner;
 use Aura\Di\Attribute\AttributeConfigFor;
 use Aura\Di\Container;
 use Aura\Di\ContainerConfigInterface;
-use Aura\Di\Fake\FakeConstructAttributeClass;
 
 class ClassScannerConfig implements ContainerConfigInterface
 {
@@ -27,23 +26,22 @@ class ClassScannerConfig implements ContainerConfigInterface
      * @var array
      *
      */
-    private array $injectNamespaces;
-
+    private array $compileNamespaces;
 
     /**
      *
      * Constructor.
      *
-     * @param MapGeneratorInterface $classMapGenerator TThe class that generates classes linked to files.
+     * @param MapGeneratorInterface $classMapGenerator The class that generates classes linked to files.
      *
-     * @param array $injectNamespaces The namespaces that will be scanned for classes the
+     * @param array $compileNamespaces The namespaces that will be scanned for classes the
      * Resolver needs to create a Blueprint for during compilation.
      *
      */
-    public function __construct(MapGeneratorInterface $classMapGenerator, array $injectNamespaces = [])
+    public function __construct(MapGeneratorInterface $classMapGenerator, array $compileNamespaces = [])
     {
         $this->mapGenerator = $classMapGenerator;
-        $this->injectNamespaces = $injectNamespaces;
+        $this->compileNamespaces = $compileNamespaces;
     }
 
     public function define(Container $di): void
@@ -61,7 +59,7 @@ class ClassScannerConfig implements ContainerConfigInterface
         }
 
         foreach ($classMap->getClasses() as $className) {
-            foreach ($this->injectNamespaces as $namespace) {
+            foreach ($this->compileNamespaces as $namespace) {
                 if (\str_starts_with($className, $namespace)) {
                     $di->params[$className] = $di->params[$className] ?? [];
                 }
