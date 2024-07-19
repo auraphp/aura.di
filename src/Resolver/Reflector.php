@@ -206,13 +206,14 @@ class Reflector
 
         $constants = $reflectionClass->getConstants();
         /** @var \ReflectionClassConstant $constant */
-        foreach ($constants as $constant) {
-            foreach ($constant->getAttributes() as $attribute) {
+        foreach (\array_keys($constants) as $constant) {
+            $reflectionConstant = new \ReflectionClassConstant($reflectionClass->getName(), $constant);
+            foreach ($reflectionConstant->getAttributes() as $attribute) {
                 yield from $this->configureAttribute(
                     $attribute,
                     $className,
                     \Attribute::TARGET_CLASS_CONSTANT,
-                    ['constant' => $constant->getName()],
+                    ['constant' => $reflectionConstant->getName()],
                 );
             }
         }
