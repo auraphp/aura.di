@@ -15,7 +15,7 @@ use Aura\Di\Injection\Lazy;
 use Aura\Di\Injection\LazyGet;
 use Aura\Di\Injection\LazyInterface;
 
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class Service implements AnnotatedInjectInterface
 {
     private string $name;
