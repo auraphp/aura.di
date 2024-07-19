@@ -9,10 +9,10 @@ final class ClassMap
     private array $filesToClass = [];
     private array $classesToAttributes = [];
 
-    public function addClass(string $class, string $filename, array $annotatedAttributes): void
+    public function addClass(string $class, string $filename, array $attributeSpecifications): void
     {
         $this->filesToClass[$filename] = $class;
-        $this->classesToAttributes[$class] = $annotatedAttributes;
+        $this->classesToAttributes[$class] = $attributeSpecifications;
     }
 
     public function remove(string $filename): void
