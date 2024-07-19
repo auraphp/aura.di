@@ -205,7 +205,6 @@ class Reflector
         }
 
         $constants = $reflectionClass->getConstants();
-        /** @var \ReflectionClassConstant $constant */
         foreach (\array_keys($constants) as $constant) {
             $reflectionConstant = new \ReflectionClassConstant($reflectionClass->getName(), $constant);
             foreach ($reflectionConstant->getAttributes() as $attribute) {
