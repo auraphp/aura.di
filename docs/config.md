@@ -160,7 +160,7 @@ $di->params[VendorClass::class] = [
 
 ## Scan for classes and annotations
 
-The `ClassScanner` scans the passed directories for classes and annotations. You will need that if you
+The `ClassScannerConfig` class scans the passed directories for classes and annotations. You will need that if you
 want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes). The classes inside
 the passed namespaces will be compiled into blueprints, making sure all the required meta-data is there to create an
 instance of the class.
