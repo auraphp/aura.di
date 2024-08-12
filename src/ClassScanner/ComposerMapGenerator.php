@@ -22,16 +22,10 @@ final class ComposerMapGenerator implements MapGeneratorInterface
         $this->reflector = new Reflector();
     }
 
-    public function generate(?array $skipFiles = null): ClassMap
+    public function generate(): ClassMap
     {
         $generator = new ClassMapGenerator();
-        if ($skipFiles === null) {
-            $generator->avoidDuplicateScans();
-        } else {
-            $fileList = new FileList();
-            $fileList->files = $skipFiles;
-            $generator->avoidDuplicateScans($fileList);
-        }
+        $generator->avoidDuplicateScans();
 
         foreach ($this->paths as $path) {
             $generator->scanPaths($path, $this->excluded);
@@ -48,6 +42,40 @@ final class ComposerMapGenerator implements MapGeneratorInterface
                 $path,
                 [...$this->reflector->yieldAttributes($class)]
             );
+        }
+
+        return $classMap;
+    }
+
+    public function update(ClassMap $classMap, array $updatedFiles): ClassMap
+    {
+        $deleted = [];
+        $skip = [];
+
+        $generator = new ClassMapGenerator();
+        foreach ($classMap->getFiles() as $file) {
+            if (!\in_array($file, $updatedFiles, true)) {
+                $skip[$file] = true;
+            }
+        }
+
+        foreach ($updatedFiles as $file) {
+            if (!\is_file($file)) {
+                $deleted[] = $file;
+            }
+        }
+
+        $fileList = new FileList();
+        $fileList->files = $skip;
+        $generator->avoidDuplicateScans($fileList);
+
+        foreach ($this->paths as $path) {
+            $generator->scanPaths($path, $this->excluded);
+        }
+
+        $classMap = $this->convertToClassMap(new ClassMap(), $generator->getClassMap()->getMap());
+        foreach ($deleted as $filename) {
+            $classMap->remove($filename);
         }
 
         return $classMap;

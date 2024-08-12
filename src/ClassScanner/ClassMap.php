@@ -37,6 +37,11 @@ final class ClassMap
         return $this->filesToClass;
     }
 
+    public function getFiles(): array
+    {
+        return \array_keys($this->filesToClass);
+    }
+
     /**
      * @return array<int, AttributeSpecification>
      */

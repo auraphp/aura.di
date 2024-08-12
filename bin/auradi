@@ -1,0 +1,73 @@
+#!/usr/bin/env php
+<?php
+
+use Aura\Di\ClassScanner\CachedFileModificationGenerator;
+use Aura\Di\ClassScanner\ComposerMapGenerator;
+
+if (PHP_SAPI !== 'cli') {
+    echo 'Warning: auradi should be invoked via the CLI version of PHP, not the ' . PHP_SAPI . ' SAPI' . PHP_EOL;
+}
+
+$currentCwd = getcwd();
+
+if (!file_exists($currentCwd . '/vendor/autoload.php')) {
+    throw new RuntimeException('Could not find autoload.php in path ' . $currentCwd . '/vendor/autoload.php');
+}
+
+require __DIR__ . '/../vendor/autoload.php';
+
+if (\count($argv) < 2) {
+    echo 'Use one of the following commands:' . PHP_EOL;
+    echo PHP_EOL;
+    echo 'scan             Scan for classes and annotations' . PHP_EOL;
+}
+
+$args = $argv;
+$scriptDir = array_shift($args);
+$command = array_shift($args);
+
+if ($command === 'scan') {
+    if (!file_exists($currentCwd . '/vendor/composer/installed.json')) {
+        throw new RuntimeException('Could not include ./vendor/composer/installed.json in path ' . $currentCwd . '/vendor/composer/installed.json');
+    }
+
+    echo 'Using ./vendor/composer/installed.json to detect which paths to scan:' . PHP_EOL;
+
+    $installedJsonContents = file_get_contents($currentCwd . '/vendor/composer/installed.json');
+    if (!$installedJsonContents) {
+        throw new RuntimeException('Could not read json from ./vendor/composer/installed.json');
+    }
+
+    $installedJson = json_decode($installedJsonContents, true);
+    if (!$installedJson) {
+        throw new RuntimeException('Could not parse json from ./vendor/composer/installed.json');
+    }
+
+    $classMapPaths = [];
+    foreach ($installedJson['packages'] as $package) {
+        foreach (($package['extra']['aura/di']['classMapPaths'] ?? []) as $classMapPath) {
+            $fullPath = $currentCwd . '/vendor/' . $package['name'] . '/' . $classMapPath;
+            $classMapPaths[] = $fullPath;
+            echo '- ' . $fullPath . PHP_EOL;
+        }
+    }
+
+    echo 'Found ' . count($classMapPaths) . ' classmap paths' . PHP_EOL;
+    echo PHP_EOL;
+
+    if (in_array('--force', $args, true)) {
+        unlink($currentCwd . '/vendor/aura.di.scan.json');
+    }
+
+    $generator = new CachedFileModificationGenerator(
+        new ComposerMapGenerator($classMapPaths),
+        $currentCwd . '/vendor/aura.di.scan.json'
+    );
+
+    echo 'Scanning paths for classes and annotations.' . PHP_EOL;
+
+    $classMap = $generator->generate();
+    echo '- ' . count($classMap->getFiles()) .  ' files' . PHP_EOL;
+    echo '- ' . count($classMap->getClasses()) .  ' classes' . PHP_EOL;
+    echo '- ' . count($classMap->getAttributeSpecifications()) .  ' attributes' . PHP_EOL;
+}

@@ -2,12 +2,14 @@
 namespace Aura\Di\Fake;
 
 use Aura\Di\Attribute\AttributeConfigFor;
+use Aura\Di\Attribute\CompileNamespace;
 use Aura\Di\ClassScanner\AttributeConfigInterface;
 use Aura\Di\ClassScanner\AttributeSpecification;
 use Aura\Di\Container;
 
 #[\Attribute]
 #[AttributeConfigFor(FakeWorkerAttribute::class)]
+#[CompileNamespace(__NAMESPACE__)]
 class FakeWorkerAttribute implements AttributeConfigInterface
 {
     private int $someSetting;

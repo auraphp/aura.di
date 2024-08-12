@@ -17,6 +17,7 @@
             "homepage": "https://github.com/auraphp/Aura.Di/contributors"
         }
     ],
+    "bin": ["bin/auradi"],
     "require": {
         "php": "^8.0",
         "psr/container": "^2.0.2"

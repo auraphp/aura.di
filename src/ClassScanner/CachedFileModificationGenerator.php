@@ -8,61 +8,39 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
 {
     private MapGeneratorInterface $delegatedGenerator;
     private string $cacheFilename;
-    private int $debounceMs;
 
     public function __construct(
         MapGeneratorInterface $delegatedGenerator,
         string $cacheFilename,
-        int $debounceMs = 500
     ) {
         $this->delegatedGenerator = $delegatedGenerator;
         $this->cacheFilename = $cacheFilename;
-        $this->debounceMs = $debounceMs;
     }
 
-    public function generate(?array $skipFiles = null): ClassMap
+    public function generate(): ClassMap
     {
         $cacheFileHandle = \fopen($this->cacheFilename, 'a+');
         if (\fstat($cacheFileHandle)['size'] > 0) {
-            if (\filemtime($this->cacheFilename) + ($this->debounceMs / 1000) <= \time()) {
-                \flock($cacheFileHandle, LOCK_EX);
-                $cacheContents = \stream_get_contents($cacheFileHandle);
-                $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
-                $classMap = $this->readClassMapFromCacheJson($cacheContentsJson);
-
-                if ($skipFiles === null) {
-                    $skipFiles = [];
-                }
-
-                $deleted = [];
-                foreach ($cacheContentsJson['filetimes'] as $filename => $cacheModTime) {
-                    if (\is_file($filename) === false) {
-                        $deleted[] = $filename;
-                    } elseif (($newTime = \filemtime($filename)) !== $cacheModTime) {
-                        $cacheContentsJson['filetimes'][$filename] = $newTime;
-                    } else {
-                        $skipFiles[] = $filename;
-                    }
-                }
-
-                $classMap = $classMap->merge($this->delegatedGenerator->generate($skipFiles));
-                foreach ($deleted as $filename) {
-                    $classMap->remove($filename);
-                }
-
-                $this->writeClassMapToFileHandle($cacheFileHandle, $classMap, $cacheContentsJson['filetimes']);
-            } else {
-                \flock($cacheFileHandle, \LOCK_SH);
-                $cacheContents = \stream_get_contents($cacheFileHandle);
-                $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
-                $classMap = $this->readClassMapFromCacheJson($cacheContentsJson);
-            }
+            $cacheContents = \stream_get_contents($cacheFileHandle);
+            $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
+            $classMap = $this->readClassMapFromCacheJson($cacheContentsJson);
         } else {
             \flock($cacheFileHandle, LOCK_EX);
             $classMap = $this->delegatedGenerator->generate();
             $this->writeClassMapToFileHandle($cacheFileHandle, $classMap);
         }
 
+        \fclose($cacheFileHandle);
+        return $classMap;
+    }
+
+    public function update(ClassMap $classMap, array $updatedFiles): ClassMap
+    {
+        $cacheFileHandle = \fopen($this->cacheFilename, 'a+');
+        \flock($cacheFileHandle, LOCK_EX);
+
+        $classMap = $this->delegatedGenerator->update($classMap, $updatedFiles);
+        $this->writeClassMapToFileHandle($cacheFileHandle, $classMap);
         \fclose($cacheFileHandle);
         return $classMap;
     }
@@ -88,16 +66,14 @@ final class CachedFileModificationGenerator implements MapGeneratorInterface
         return $classMap;
     }
 
-    private function writeClassMapToFileHandle($fileHandle, ClassMap $classMap, array $filetimes = []): void
+    private function writeClassMapToFileHandle($fileHandle, ClassMap $classMap): void
     {
         $classMapJson = [
             'files' => [],
-            'filetimes' => [],
             'attributes' => [],
         ];
         foreach ($classMap->getFileToClassMap() as $filename => $className) {
             $classMapJson['files'][$filename] = $className;
-            $classMapJson['filetimes'][$filename] = $filetimes[$filename] ?? \filemtime($filename);
 
             if ($attributeSpecifications = $classMap->getAttributeSpecificationsFor($className)) {
                 $classMapJson['attributes'][$className] = \array_map(

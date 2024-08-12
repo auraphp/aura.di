@@ -20,7 +20,6 @@ class ClassScannerConfigTest extends TestCase
 
         $this->config = ClassScannerConfig::newScanner(
             [__DIR__ . '/../Fake'],
-            ['Aura\Di\Fake'],
         );
     }
 
