@@ -61,8 +61,8 @@ if ($command === 'scan') {
     }
 
     $generator = new CachedFileGenerator(
-        new ComposerMapGenerator($classMapPaths),
-        $currentCwd . '/vendor/aura.di.scan.json'
+        new ComposerMapGenerator($classMapPaths, $currentCwd),
+        $currentCwd . '/vendor/aura.di.scan.json',
     );
 
     echo 'Scanning paths for classes and annotations.' . PHP_EOL;
@@ -71,4 +71,38 @@ if ($command === 'scan') {
     echo '- ' . count($classMap->getFiles()) .  ' files' . PHP_EOL;
     echo '- ' . count($classMap->getClasses()) .  ' classes' . PHP_EOL;
     echo '- ' . count($classMap->getAttributeSpecifications()) .  ' attributes' . PHP_EOL;
+    echo PHP_EOL;
+
+    $updates = [];
+    $position = 0;
+    while (array_key_exists($position, $args)) {
+        if ($args[$position] === '-u') {
+            $position++;
+
+            if (!array_key_exists($position, $args)) {
+                throw new \UnexpectedValueException('-u must be followed by a file name');
+            }
+
+            $updates[] = $args[$position];
+        }
+
+        $position++;
+    }
+
+    if ($updates) {
+        echo 'Updating scan for' . PHP_EOL;
+        foreach ($updates as $update) {
+            echo '- ' . $update . PHP_EOL;
+        }
+
+        echo PHP_EOL;
+
+        $generator->update($classMap, $updates);
+
+        echo 'After update we have ' . PHP_EOL;
+        echo '- ' . count($classMap->getFiles()) .  ' files' . PHP_EOL;
+        echo '- ' . count($classMap->getClasses()) .  ' classes' . PHP_EOL;
+        echo '- ' . count($classMap->getAttributeSpecifications()) .  ' attributes' . PHP_EOL;
+        echo PHP_EOL;
+    }
 }

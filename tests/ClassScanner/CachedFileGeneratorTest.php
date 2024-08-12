@@ -39,7 +39,6 @@ class CachedFileGeneratorTest extends TestCase
                 $this->dir
             ]),
             $cacheFile,
-            0
         );
 
         $classSuffix = \bin2hex(\random_bytes(4));

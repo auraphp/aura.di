@@ -10,14 +10,17 @@ use Composer\ClassMapGenerator\FileList;
 final class ComposerMapGenerator implements MapGeneratorInterface
 {
     private array $paths;
+    private string $basePath;
     private ?string $excluded;
     private Reflector $reflector;
 
     public function __construct(
         array $paths,
+        string $basePath = '',
         ?string $excluded = null,
     ) {
         $this->paths = $paths;
+        $this->basePath = $basePath;
         $this->excluded = $excluded;
         $this->reflector = new Reflector();
     }
@@ -37,6 +40,10 @@ final class ComposerMapGenerator implements MapGeneratorInterface
     private function convertToClassMap(ClassMap $classMap, array $composerMap): ClassMap
     {
         foreach ($composerMap as $class => $path) {
+            if ($this->basePath !== '' && \str_starts_with($path, $this->basePath)) {
+                $path = \substr($path, \strlen($this->basePath));
+            }
+
             $classMap->addClass(
                 $class,
                 $path,
@@ -49,6 +56,18 @@ final class ComposerMapGenerator implements MapGeneratorInterface
 
     public function update(ClassMap $classMap, array $updatedFiles): ClassMap
     {
+        $shouldFullGenerate = false;
+        foreach ($updatedFiles as $index => $updatedFile) {
+            if ($this->basePath !== '' && \str_starts_with($updatedFile, $this->basePath)) {
+                $updatedFiles[$index] = \substr($updatedFile, \strlen($this->basePath));
+                $shouldFullGenerate = $shouldFullGenerate || $classMap->fileContainsAttributeClass($updatedFiles[$index]);
+            }
+        }
+
+        if ($shouldFullGenerate) {
+            return $this->generate();
+        }
+
         $deleted = [];
         $skip = [];
 

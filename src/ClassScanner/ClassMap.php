@@ -7,8 +7,12 @@ namespace Aura\Di\ClassScanner;
 final class ClassMap
 {
     private array $filesToClass = [];
+    /** @var array<class-string, array<int, AttributeSpecification>> */
     private array $classesToAttributes = [];
 
+    /**
+     * @param array<int, AttributeSpecification> $attributeSpecifications
+     */
     public function addClass(string $class, string $filename, array $attributeSpecifications): void
     {
         $this->filesToClass[$filename] = $class;
@@ -56,6 +60,27 @@ final class ClassMap
     public function getAttributeSpecifications(): array
     {
         return \array_merge([], ...array_values($this->classesToAttributes));
+    }
+
+    public function fileContainsAttributeClass(string $filename): bool
+    {
+        if (!\array_key_exists($filename, $this->filesToClass)) {
+            return false;
+        }
+
+        $class = $this->filesToClass[$filename];
+        if (!\array_key_exists($class, $this->classesToAttributes)) {
+            return false;
+        }
+
+        $attributeSpecifications = $this->classesToAttributes[$class];
+        foreach ($attributeSpecifications as $specification) {
+            if ($specification->getAttributeInstance() instanceof \Attribute) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function merge(ClassMap $other): ClassMap
