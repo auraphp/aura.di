@@ -14,7 +14,7 @@ if (!file_exists($currentCwd . '/vendor/autoload.php')) {
     throw new RuntimeException('Could not find autoload.php in path ' . $currentCwd . '/vendor/autoload.php');
 }
 
-require __DIR__ . '/../vendor/autoload.php';
+require $currentCwd . '/vendor/autoload.php';
 
 if (\count($argv) < 2) {
     echo 'Use one of the following commands:' . PHP_EOL;
@@ -33,7 +33,8 @@ if ($command === 'scan') {
 
     echo 'Using ./vendor/composer/installed.json to detect which paths to scan:' . PHP_EOL;
 
-    $installedJsonContents = file_get_contents($currentCwd . '/vendor/composer/installed.json');
+    $installedJsonFile = $currentCwd . '/vendor/composer/installed.json';
+    $installedJsonContents = file_get_contents($installedJsonFile);
     if (!$installedJsonContents) {
         throw new RuntimeException('Could not read json from ./vendor/composer/installed.json');
     }
@@ -45,8 +46,8 @@ if ($command === 'scan') {
 
     $classMapPaths = [];
     foreach ($installedJson['packages'] as $package) {
-        foreach (($package['extra']['aura/di']['classMapPaths'] ?? []) as $classMapPath) {
-            $fullPath = $currentCwd . '/vendor/' . $package['name'] . '/' . $classMapPath;
+        foreach (($package['extra']['aura/di']['classmap-paths'] ?? []) as $classMapPath) {
+            $fullPath = realpath(dirname($installedJsonFile) . '/' . $package['install-path'] . '/' . $classMapPath);
             $classMapPaths[] = $fullPath;
             echo '- ' . $fullPath . PHP_EOL;
         }

@@ -164,7 +164,7 @@ When classes are instantiated by the container, it uses reflection to get inform
 parameters are used by the constructor. This information is used to create a class that in this package is called
 a Blueprint. 
 
-In order to prevent that blueprints have to created for every PHP-run, you can decide to compile 
+In order to prevent that blueprints have to created for every PHP-run, you can improve performance by compiling 
 blueprints. You do this by annotating a class, typically an `Application`, `Kernel` or `Plugin` class. The following
 example demonstrates how to use compiled blueprints for your `Controller` and `Command` namespace.
 
@@ -187,18 +187,47 @@ Working with the `#[CompileNamespace]` attribute requires using the `ClassScanne
 
 ## Scan for classes and annotations
 
-The `ClassScannerConfig` class scans the passed directories for classes and annotations. You will need that if you
-want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes). The classes inside
-the passed namespaces will be compiled into blueprints, making sure all the required meta-data is there to create an
-instance of the class.
+The `ClassScannerConfig` class uses a generated-file to extract all classes and annotations from your project. You will 
+need that if you want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes).
 
-This does require, however, to add a package to your dependencies.
+First of all, this does require to add a package to your dependencies.
 
 ```sh
 composer require composer/class-map-generator
 ``` 
 
-The following example demonstrates how to scan your project source files for annotations.
+Then add to the `"extra"` of your composer.json a new key `"aura/di"` with subkey `"classmap-paths"` to indicate which
+paths should be scanned for classes and annotations. This is also true for dependencies. Those `"classmap-paths"` will
+be picked up by the scanner too.
+
+```json
+{
+    "require": {
+        "aura/di": "^5.0",
+        ...
+    },
+    "extra": {
+        "aura/di": {
+            "classmap-paths": [
+                "./lib",
+                "./src",
+                "./app/Controller",
+                "./app/Services",
+                "./app/Commands"
+            ]
+        }
+    }
+}
+```
+
+Then execute the scan.
+
+```shell
+vendor/bin/auradi scan
+```
+
+Then add the `ClassScannerConfig` to your Container Config classes. This example will generate a container in which 
+the container was modified by using attributes and with compiled blueprints as explained above. 
 
 ```php
 use Aura\Di\ClassScanner\ClassScannerConfig;
@@ -208,16 +237,11 @@ $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    ClassScannerConfig::newScanner(
-        [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
-    )
+    ClassScannerConfig::newScanner(__DIR__ . '/../../aura.di.scan.json') // reference the correct path here
 ];
 
 $di = $builder->newCompiledInstance($config_classes);
 ```
-
-When using the `ClassScanner`, make sure to serialize and cache the container output. If you do
-not do that, directories will be scanned every instance of the container.
 
 ## Compiled objects inside the container
 

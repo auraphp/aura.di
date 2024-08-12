@@ -18,8 +18,8 @@ class ClassScannerConfigTest extends TestCase
     {
         parent::setUp();
 
-        $this->config = ClassScannerConfig::newScanner(
-            [__DIR__ . '/../Fake'],
+        $this->config = new ClassScannerConfig(
+            new ComposerMapGenerator([__DIR__ . '/../Fake']),
         );
     }
 

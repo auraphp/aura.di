@@ -76,25 +76,12 @@ class ClassScannerConfig implements ContainerConfigInterface
     }
 
     /**
-     * @param array $classMapPaths Paths to scan for classes and attributes.
+     * @param string $classMapFile Generated classmap file
      *
      * @return self
      */
-    public static function newScanner(array $classMapPaths): self
+    public static function newScanner(string $classMapFile): self
     {
-        return new self(new ComposerMapGenerator($classMapPaths));
-    }
-
-    public static function newCachedScanner(
-        string $cacheFile,
-        array $classMapPaths,
-        ?string $excluded = null
-    ): self {
-        return new self(
-            new CachedFileGenerator(
-                new ComposerMapGenerator($classMapPaths, $excluded),
-                $cacheFile
-            ),
-        );
+        return new self(new StaticFileGenerator($classMapFile));
     }
 }
