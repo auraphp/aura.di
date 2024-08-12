@@ -6,7 +6,7 @@ namespace Aura\Di\ClassScanner;
 
 use PHPUnit\Framework\TestCase;
 
-class CachedFileModificationGeneratorTest extends TestCase
+class CachedFileGeneratorTest extends TestCase
 {
     private string $dir;
 
@@ -33,7 +33,7 @@ class CachedFileModificationGeneratorTest extends TestCase
     {
         $cacheFile = $this->dir . '/cache_class_map.json';
 
-        $cachedFileModificationGenerator = new CachedFileModificationGenerator(
+        $cachedFileModificationGenerator = new CachedFileGenerator(
             new ComposerMapGenerator([
                 __DIR__ . '/../Fake',
                 $this->dir
@@ -59,7 +59,7 @@ class CachedFileModificationGeneratorTest extends TestCase
     {
         $cacheFile = $this->dir . '/cache_class_map.json';
 
-        $cachedFileModificationGenerator = new CachedFileModificationGenerator(
+        $cachedFileModificationGenerator = new CachedFileGenerator(
             new ComposerMapGenerator([
                 __DIR__ . '/../Fake',
                 $this->dir

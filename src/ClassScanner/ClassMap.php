@@ -65,4 +65,58 @@ final class ClassMap
         $classMap->classesToAttributes = \array_merge($classMap->classesToAttributes, $other->classesToAttributes);
         return $classMap;
     }
+
+    public function saveToFileHandle($fileHandle): void
+    {
+        $classMapJson = [
+            'files' => [],
+            'attributes' => [],
+        ];
+        foreach ($this->filesToClass as $filename => $className) {
+            $classMapJson['files'][$filename] = $className;
+
+            if ($attributeSpecifications = $this->getAttributeSpecificationsFor($className)) {
+                $classMapJson['attributes'][$className] = \array_map(
+                    fn (AttributeSpecification $attribute) => \serialize($attribute),
+                    $attributeSpecifications
+                );
+            }
+        }
+        \ftruncate($fileHandle, 0);
+        \fwrite($fileHandle, \json_encode($classMapJson, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public static function fromFile(string $filename): self
+    {
+        return self::fromFileHandle(\fopen($filename, 'r'));
+    }
+
+    /**
+     * @param resource $fileHandle
+     * @return ClassMap
+     * @throws \JsonException
+     */
+    public static function fromFileHandle($fileHandle): ClassMap
+    {
+        $cacheContents = \stream_get_contents($fileHandle);
+        $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
+
+        $classMap = new ClassMap();
+
+        foreach ($cacheContentsJson['files'] as $filename => $className) {
+            $classMap->addClass(
+                $className,
+                $filename,
+                \array_map(
+                    fn (string $serializedAttributeSpecification) => \unserialize($serializedAttributeSpecification),
+                    $cacheContentsJson['attributes'][$className] ?? []
+                )
+            );
+        }
+
+        return $classMap;
+    }
 }

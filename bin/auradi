@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use Aura\Di\ClassScanner\CachedFileModificationGenerator;
+use Aura\Di\ClassScanner\CachedFileGenerator;
 use Aura\Di\ClassScanner\ComposerMapGenerator;
 
 if (PHP_SAPI !== 'cli') {
@@ -59,7 +59,7 @@ if ($command === 'scan') {
         unlink($currentCwd . '/vendor/aura.di.scan.json');
     }
 
-    $generator = new CachedFileModificationGenerator(
+    $generator = new CachedFileGenerator(
         new ComposerMapGenerator($classMapPaths),
         $currentCwd . '/vendor/aura.di.scan.json'
     );

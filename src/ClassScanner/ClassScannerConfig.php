@@ -91,7 +91,7 @@ class ClassScannerConfig implements ContainerConfigInterface
         ?string $excluded = null
     ): self {
         return new self(
-            new CachedFileModificationGenerator(
+            new CachedFileGenerator(
                 new ComposerMapGenerator($classMapPaths, $excluded),
                 $cacheFile
             ),
