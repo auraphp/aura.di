@@ -6,9 +6,22 @@ namespace Aura\Di\ClassScanner;
 
 final class ClassMap
 {
+    private string $basePath;
+    /** @var array<int, string> */
+    private array $scanPaths;
+    /** @var array<string, class-string> */
     private array $filesToClass = [];
     /** @var array<class-string, array<int, AttributeSpecification>> */
     private array $classesToAttributes = [];
+
+    /**
+     * @param array<int, string> $scanPaths
+     */
+    public function __construct(array $scanPaths, string $basePath)
+    {
+        $this->scanPaths = $scanPaths;
+        $this->basePath = $basePath;
+    }
 
     /**
      * @param array<int, AttributeSpecification> $attributeSpecifications
@@ -94,6 +107,8 @@ final class ClassMap
     public function saveToFileHandle($fileHandle): void
     {
         $classMapJson = [
+            'scanPaths' => $this->scanPaths,
+            'basePath' => $this->basePath,
             'files' => [],
             'attributes' => [],
         ];
@@ -129,7 +144,7 @@ final class ClassMap
         $cacheContents = \stream_get_contents($fileHandle);
         $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
 
-        $classMap = new ClassMap();
+        $classMap = new ClassMap($cacheContentsJson['scanPaths'], $cacheContentsJson['basePath']);
 
         foreach ($cacheContentsJson['files'] as $filename => $className) {
             $classMap->addClass(

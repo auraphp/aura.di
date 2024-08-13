@@ -34,7 +34,13 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             $generator->scanPaths($path, $this->excluded);
         }
 
-        return $this->convertToClassMap(new ClassMap(), $generator->getClassMap()->getMap());
+        return $this->convertToClassMap(
+            new ClassMap(
+                $this->paths,
+                $this->basePath
+            ),
+            $generator->getClassMap()->getMap()
+        );
     }
 
     private function convertToClassMap(ClassMap $classMap, array $composerMap): ClassMap
@@ -92,7 +98,11 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             $generator->scanPaths($path, $this->excluded);
         }
 
-        $classMap = $this->convertToClassMap(new ClassMap(), $generator->getClassMap()->getMap());
+        $classMap = $this->convertToClassMap(
+            new ClassMap($this->paths, $this->basePath),
+            $generator->getClassMap()->getMap()
+        );
+
         foreach ($deleted as $filename) {
             $classMap->remove($filename);
         }
