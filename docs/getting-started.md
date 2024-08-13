@@ -65,13 +65,14 @@ However, this is a relatively naive way to create objects with the _Container_. 
 
 A full-featured container can use [attributes](attributes.md) for injection and container modification. Moreover, for
 maximum performance, we would have to compile the container, serialize it and save it to a cache layer like the filesystem.
-Subsequent processes would only have to unserialize to have a compiled container. 
+Subsequent processes would only have to unserialize to have a compiled container.
 
-The `ClassScanner` scans for classes and annotations inside your project. This does require, 
-however, to add a package to your dependencies.
+The `ClassScannerConfig` scans for classes and annotations inside your project. This does require, 
+however, to add a package to your dependencies and run the `scan` command in the `auradi` executable.
 
 ```sh
 composer require composer/class-map-generator
+vendor/bin/auradi scan --force
 ``` 
 
 Creating a fully-featured container could look as follows:
@@ -84,10 +85,7 @@ $serializedContainerFile = '/var/compiled.ser';
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    ClassScannerConfig::newScanner(
-        [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
-        ['MyApp\\'], // classes inside these namespaces should be compiled
-    )
+    ClassScannerConfig::newScanner(__DIR__ . '/../../aura.di.scan.json') // reference the correct path here
 ];
 
 if (file_exists($serializedContainerFile)) {
