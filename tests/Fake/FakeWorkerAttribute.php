@@ -1,10 +1,15 @@
 <?php
 namespace Aura\Di\Fake;
 
-use Aura\Di\AttributeConfigInterface;
+use Aura\Di\Attribute\AttributeConfigFor;
+use Aura\Di\Attribute\CompileNamespace;
+use Aura\Di\ClassScanner\AttributeConfigInterface;
+use Aura\Di\ClassScanner\AttributeSpecification;
 use Aura\Di\Container;
 
 #[\Attribute]
+#[AttributeConfigFor(FakeWorkerAttribute::class)]
+#[CompileNamespace(__NAMESPACE__)]
 class FakeWorkerAttribute implements AttributeConfigInterface
 {
     private int $someSetting;
@@ -14,13 +19,15 @@ class FakeWorkerAttribute implements AttributeConfigInterface
         $this->someSetting = $someSetting;
     }
 
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void
+    public static function define(Container $di, AttributeSpecification $specification): void
     {
-        if ($annotatedTo instanceof \ReflectionClass) {
+        /** @var self $attribute */
+        $attribute = $specification->getAttributeInstance();
+        if ($specification->getAttributeTarget() === \Attribute::TARGET_CLASS) {
             $di->values['worker'] = $di->values['worker'] ?? [];
             $di->values['worker'][] = [
-                'someSetting' => $this->someSetting,
-                'className' => $annotatedTo->getName(),
+                'someSetting' => $attribute->someSetting,
+                'className' => $specification->getClassName(),
             ];
         }
     }

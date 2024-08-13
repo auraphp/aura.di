@@ -8,9 +8,11 @@ declare(strict_types=1);
  *
  */
 
-namespace Aura\Di;
+namespace Aura\Di\ClassScanner;
+
+use Aura\Di\Container;
 
 interface AttributeConfigInterface
 {
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void;
+    public static function define(Container $di, AttributeSpecification $specification): void;
 }

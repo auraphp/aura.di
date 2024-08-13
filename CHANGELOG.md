@@ -3,11 +3,16 @@
 ## Unreleased
 
 - (ADD) $container->lazyLazy() to create a callable from a LazyInterface that is directly invokable. 
+- (ADD) `#[AttributeConfigFor]` attribute to indicate scanner which attribute is configured by the annotated class.
+- (ADD) `#[CompileNamespace]` attribute to indicate scanner which namespace should have compiled blueprints.
+- (ADD) `bin/auradi` executable with scan command.
 - (CHG) Fix `lazyGet` not resolving the same service.
+- (CHG) Fix collection of attributes for class constants.
+- (CHG) `#[Service]`, `#[Instance]` and `#[Value]` must have `Attribute::TARGET_PROPERTY` to allow constructor promotion.
 
 ## 5.0.0-alpha.1
 
-- (ADD) Inject via attributes
+- (ADD) Inject via `#[Service]`, `#[Instance]` and `#[Value]` attributes.
 - (ADD) Configure the container via attributes using the AttributeConfigInterface
 - (ADD) Directories scanner for classes and annotations
 - (ADD) Dependency requirement of composer/class-map-generator when using the scanner

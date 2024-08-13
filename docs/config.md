@@ -158,68 +158,89 @@ $di->params[VendorClass::class] = [
 ];
 ```
 
+## Compiled Blueprints
+
+When classes are instantiated by the container, it uses reflection to get information of the class, e.g. what 
+parameters are used by the constructor. This information is used to create a class that in this package is called
+a Blueprint. 
+
+In order to prevent that blueprints have to created for every PHP-run, you can improve performance by compiling 
+blueprints. You do this by annotating a class, typically an `Application`, `Kernel` or `Plugin` class. The following
+example demonstrates how to use compiled blueprints for your `Controller` and `Command` namespace.
+
+```php
+namespace MyPlugin;
+
+use Aura\Di\Attribute\CompileNamespace;
+
+#[CompileNamespace(__NAMESPACE__ . '\\Controllers')]
+#[CompileNamespace(__NAMESPACE__ . '\\Command')]
+class Plugin {
+
+}
+```
+
+Typically, you should not compile namespace your complete plugin. That would be overkill, because there are classes
+like entities, models and DTOs that are never being instantiated by the container.
+
+Working with the `#[CompileNamespace]` attribute requires using the `ClassScannerConfig` which is documented below.
+
 ## Scan for classes and annotations
 
-The `ClassScanner` scans the passed directories for classes and annotations. You will need that if you
-want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes). The classes inside
-the passed namespaces will be compiled into blueprints, making sure all the required meta-data is there to create an
-instance of the class.
+The `ClassScannerConfig` class uses a generated-file to extract all classes and annotations from your project. You will 
+need that if you want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes).
 
-This does require, however, to add a package to your dependencies.
+First of all, this does require to add a package to your dependencies.
 
 ```sh
 composer require composer/class-map-generator
 ``` 
 
-The following example demonstrates how to scan your project source files for annotations. The example compiles all 
-controllers, services and repository classes into a blueprints.
+Then add to the `"extra"` of your composer.json a new key `"aura/di"` with subkey `"classmap-paths"` to indicate which
+paths should be scanned for classes and annotations. This is also true for dependencies. Those `"classmap-paths"` will
+be picked up by the scanner too.
+
+```json
+{
+    "require": {
+        "aura/di": "^5.0",
+        ...
+    },
+    "extra": {
+        "aura/di": {
+            "classmap-paths": [
+                "./lib",
+                "./src",
+                "./app/Controller",
+                "./app/Services",
+                "./app/Commands"
+            ]
+        }
+    }
+}
+```
+
+Then execute the scan.
+
+```shell
+vendor/bin/auradi scan
+```
+
+Then add the `ClassScannerConfig` to your Container Config classes. This example will generate a container in which 
+the container was modified by using attributes and with compiled blueprints as explained above. 
 
 ```php
-use Aura\Di\ClassScanner;
+use Aura\Di\ClassScanner\ClassScannerConfig;
 use Aura\Di\ContainerBuilder;
 
 $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    new ClassScanner(
-        [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
-        ['MyApp\\Controller\\', 'MyApp\\Service\\', 'MyApp\\Repository\\'], // classes inside these namespaces should be compiled
-    )
+    ClassScannerConfig::newScanner(__DIR__ . '/../../aura.di.scan.json') // reference the correct path here
 ];
 
 $di = $builder->newCompiledInstance($config_classes);
-```
-
-When using the `ClassScanner`, make sure to serialize and cache the container output. If you do
-not do that, directories will be scanned every instance of the container.
-
-If your attribute cannot implement the `AttributeConfigInterface`, e.g. the attribute is defined in an external package, 
-you can pass a map with the class name of the attribute and an implementation of `AttributeConfigInterface`.
-
-```php
-use Aura\Di\AttributeConfigInterface;
-
-new ClassScanner(
-    [$rootDir . '/app/src'], // these directories should be scanned for classes and annotations
-    ['MyApp\\'], // classes inside these namespaces should be compiled,
-    [
-        Symfony\Component\Routing\Attribute\Route::class => new SymfonyRouteAttributeConfig()
-    ]
-)
-
-class SymfonyRouteAttributeConfig implements AttributeConfigInterface
-{
-    public function define(Container $di, \ReflectionAttribute $attribute, \Reflector $annotatedTo): void
-    {
-        if ($annotatedTo instanceof ReflectionMethod) {
-            $route = $attribute->newInstance();
-            $di->values['routes'][] = new Symfony\Component\Routing\Route(
-                // ...
-            );
-        }
-    }
-}
 ```
 
 ## Compiled objects inside the container
@@ -241,36 +262,36 @@ use Aura\Di\ContainerCompileInterface;
 
 class RouterContainerConfig implements ContainerCompileInterface 
 {
-  public function define(Container $di): void
-  {
-    $container->set('router.factory', $container->lazyNew(MyRouterFactory::class));
-  }
+    public function define(Container $di): void
+    {
+        $container->set('router.factory', $container->lazyNew(MyRouterFactory::class));
+    }
 
-  public function compile(Container $di): void
-  {
-    $container->set('router', $container->get('router.factory')->compile());
-  }
+    public function compile(Container $di): void
+    {
+        $container->set('router', $container->get('router.factory')->compile());
+    }
 
-  public function modify(Container $di): void
-  {
-  }
+    public function modify(Container $di): void
+    {
+    }
 }
 
 class MyRouterFactory {
-  public function __construct(
-    #[Value('routes')]
-    private array $routes
-  ) {
-  }
-
-  public function compile(): Router
-  {
-    $router = new Router();
-    foreach ($this->routes as $route) {
-      $router->addRoute($route);
+    public function __construct(
+        #[Value('routes')]
+        private array $routes
+    ) {
     }
-    $router->compile();
-    return $router;
-  }
+
+    public function compile(): Router
+    {
+        $router = new Router();
+        foreach ($this->routes as $route) {
+            $router->addRoute($route);
+        }
+        $router->compile();
+        return $router;
+    }
 }
 ```

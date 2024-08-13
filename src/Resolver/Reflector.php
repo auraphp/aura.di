@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 namespace Aura\Di\Resolver;
 
+use Aura\Di\ClassScanner\AttributeSpecification;
 use ReflectionClass;
 use ReflectionException;
 
@@ -144,5 +145,92 @@ class Reflector
         }
 
         return $this->traits[$class];
+    }
+
+    /**
+     * @param string $className
+     * @return \Generator<int, AttributeSpecification>
+     * @throws ReflectionException
+     */
+    public function yieldAttributes(string $className): \Generator
+    {
+        $reflectionClass = $this->getClass($className);
+        foreach ($reflectionClass->getAttributes() as $attribute) {
+            yield from $this->configureAttribute(
+                $attribute,
+                $className,
+                \Attribute::TARGET_CLASS
+            );
+        }
+
+        $methods = $reflectionClass->getMethods();
+        foreach ($methods as $method) {
+            foreach ($method->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_METHOD,
+                    [
+                        'method' => $method->getName(),
+                    ]
+                );
+            }
+
+            $parameters = $method->getParameters();
+            foreach ($parameters as $parameter) {
+                foreach ($parameter->getAttributes() as $attribute) {
+                    yield from $this->configureAttribute(
+                        $attribute,
+                        $className,
+                        \Attribute::TARGET_PARAMETER,
+                        [
+                            'method' => $method->getName(),
+                            'parameter' => $parameter->getName(),
+                        ]
+                    );
+                }
+            }
+        }
+
+        $properties = $reflectionClass->getProperties();
+        foreach ($properties as $property) {
+            foreach ($property->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_PROPERTY,
+                    ['property' => $property->getName()],
+                );
+            }
+        }
+
+        $constants = $reflectionClass->getConstants();
+        foreach (\array_keys($constants) as $constant) {
+            $reflectionConstant = new \ReflectionClassConstant($reflectionClass->getName(), $constant);
+            foreach ($reflectionConstant->getAttributes() as $attribute) {
+                yield from $this->configureAttribute(
+                    $attribute,
+                    $className,
+                    \Attribute::TARGET_CLASS_CONSTANT,
+                    ['constant' => $reflectionConstant->getName()],
+                );
+            }
+        }
+    }
+
+    public function configureAttribute(
+        \ReflectionAttribute $attribute,
+        string $className,
+        int $targetMethod,
+        array $targetConfig = []
+    ): \Generator
+    {
+        $instance = $attribute->newInstance();
+        yield new AttributeSpecification(
+            $instance,
+            $className,
+            $targetMethod,
+            $targetConfig
+        );
     }
 }
