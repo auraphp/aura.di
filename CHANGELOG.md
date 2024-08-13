@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## 5.0.0-alpha.2
 
 - (ADD) $container->lazyLazy() to create a callable from a LazyInterface that is directly invokable. 
 - (ADD) `#[AttributeConfigFor]` attribute to indicate scanner which attribute is configured by the annotated class.
