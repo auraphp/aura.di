@@ -19,7 +19,9 @@ require $currentCwd . '/vendor/autoload.php';
 if (\count($argv) < 2) {
     echo 'Use one of the following commands:' . PHP_EOL;
     echo PHP_EOL;
-    echo 'scan             Scan for classes and annotations' . PHP_EOL;
+    echo 'scan             Scan for classes and annotations, uses cache file' . PHP_EOL;
+    echo '  --force        Forced full rescan, no cache used' . PHP_EOL;
+    echo '  -u {filename}  Scan only passed updated file' . PHP_EOL;
 }
 
 $args = $argv;
