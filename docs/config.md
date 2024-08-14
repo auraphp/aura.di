@@ -2,10 +2,13 @@
 
 ## The ContainerBuilder
 
-The _ContainerBuilder_ also builds fully-configured _Container_ objects using _ContainerConfig_ classes. It works 
+The _ContainerBuilder_ builds fully-configured _Container_ objects using _ContainerConfig_ classes. It works 
 using a [two-stage configuration system](http://auraphp.com/blog/2014/04/07/two-stage-config).
 
-The two stages are "define" and "modify". In the "define" stage, the _ContainerConfig_ object defines constructor parameter values, setter method values, services, and so on. The _ContainerBuilder_ then locks the _Container_ so that these definitions cannot be changed, and begins the "modify" stage. In the "modify" stage, we may `get()` services from the _Container_ and modify them programmatically if needed.
+The two stages are "define" and "modify". In the "define" stage, the _ContainerConfig_ object defines constructor 
+parameter values, setter method values, services, and so on. The _ContainerBuilder_ then locks the _Container_ so that 
+these definitions cannot be changed, and begins the "modify" stage. In the "modify" stage, we may `get()` services from 
+the _Container_ and modify them programmatically if needed.
 
 To build a fully-configured _Container_ using the _ContainerBuilder_, we do something like the following:
 
@@ -17,9 +20,9 @@ $container_builder = new ContainerBuilder();
 // use the builder to create and configure a container
 // using an array of ContainerConfig classes
 $di = $container_builder->newConfiguredInstance([
-    'Aura\Cli\_Config\Common',
-    'Aura\Router\_Config\Common',
-    'Aura\Web\_Config\Common',
+    Aura\Cli\_Config\Common::class,
+    Aura\Router\_Config\Common::class,
+    Aura\Web\_Config\Common::class,
 ]);
 ```
 
@@ -68,9 +71,9 @@ $routerConfig = new Aura\Router\_Config\Common();
 // use the builder to create and configure a container
 // using an array of ContainerConfig classes
 $di = $container_builder->newConfiguredInstance([
-    'Aura\Cli\_Config\Common',
+    Aura\Cli\_Config\Common::class,
     $routerConfig,
-    'Aura\Web\_Config\Common',
+    Aura\Web\_Config\Common::class,
 ]);
 ```
 
@@ -112,8 +115,11 @@ $di = $container_builder->newConfiguredInstance([\My\App\Config::class])
 ## Compiling and serializing the container
 
 With the _ContainerBuilder_, you can also create a compiled container that is ready for serialization. A compiled 
-container does all the class metadata collection and creates a `Blueprint` class for every class that can be instantiated.
-The methodology for creating a compiled container is similar to creating a configured instance.
+container does all the class metadata collection and creates a `Blueprint` class for every class that has been
+configured in the container. The methodology for creating a compiled container is similar to creating 
+a configured instance.
+
+Instead of `newConfiguredInstance`, you now call the `newCompiledInstance` method.
 
 ```php
 use Aura\Di\ContainerBuilder;
@@ -130,23 +136,28 @@ $di = $container_builder->newCompiledInstance(
 );
 ```
 
-We can then serialize and unserialize the container:
+The resulting container is ready for serialization. You can find a more real-world example below, which checks for
+a serialized container on the filesystem. When it does not exist, it uses the `ContainerBuilder` to create a container
+and save it to the filesystem.
 
 ```php
-$serialized = serialize($di);
-$di = unserialize($serialized);
+use Aura\Di\ContainerBuilder;
+
+$serializedContainerFile = '/var/compiled.ser';
+
+if (file_exists($serializedContainerFile)) {
+    $di = \unserialize(file_get_contents($serializedContainerFile));
+} else {
+    $builder = new ContainerBuilder();
+    $di = $builder->newCompiledInstance($config_classes);
+    
+    $serialized = \serialize($di);
+    file_put_contents($serializedContainerFile, $serialized);
+}
 ```
 
-This serialized container might be saved to a file, as cache layer before continuing. Finally, we must configure the 
-compiled instance. 
-
-```php
-$di = $builder->configureCompiledInstance($di, $config_classes);
-
-$fakeService = $di->get('fake');
-```
-
-Please note, serializing won't work with closures. Serializing a container with following throws an exception.
+Please note, serialization won't work with closures. Serializing a container with following configuration throws an 
+exception.
 
 ```php
 $di->params[VendorClass::class] = [
@@ -158,37 +169,11 @@ $di->params[VendorClass::class] = [
 ];
 ```
 
-## Compiled Blueprints
-
-When classes are instantiated by the container, it uses reflection to get information of the class, e.g. what 
-parameters are used by the constructor. This information is used to create a class that in this package is called
-a Blueprint. 
-
-In order to prevent that blueprints have to created for every PHP-run, you can improve performance by compiling 
-blueprints. You do this by annotating a class, typically an `Application`, `Kernel` or `Plugin` class. The following
-example demonstrates how to use compiled blueprints for your `Controller` and `Command` namespace.
-
-```php
-namespace MyPlugin;
-
-use Aura\Di\Attribute\CompileNamespace;
-
-#[CompileNamespace(__NAMESPACE__ . '\\Controllers')]
-#[CompileNamespace(__NAMESPACE__ . '\\Command')]
-class Plugin {
-
-}
-```
-
-Typically, you should not compile namespace your complete plugin. That would be overkill, because there are classes
-like entities, models and DTOs that are never being instantiated by the container.
-
-Working with the `#[CompileNamespace]` attribute requires using the `ClassScannerConfig` which is documented below.
-
 ## Scan for classes and annotations
 
 The `ClassScannerConfig` class uses a generated-file to extract all classes and annotations from your project. You will 
-need that if you want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes).
+need that if you want to [modify the container using attributes](attributes.md#modify-the-container-using-attributes) or
+you want to compile blueprints.
 
 First of all, this does require to add a package to your dependencies.
 
@@ -220,10 +205,14 @@ be picked up by the scanner too.
 }
 ```
 
-Then execute the scan.
+Then execute the scan, and see the file `vendor/aura.di.scan.json` as result.
 
 ```shell
+# scan inside the classmap paths, but if cache exits, it returns the cache
 vendor/bin/auradi scan
+
+# force a complete new scan of all classes and annotations inside the classmap paths 
+vendor/bin/auradi scan --force
 ```
 
 Then add the `ClassScannerConfig` to your Container Config classes. This example will generate a container in which 
@@ -237,10 +226,24 @@ $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    ClassScannerConfig::newScanner(__DIR__ . '/../../aura.di.scan.json') // reference the correct path here
+    ClassScannerConfig::newScanner('vendor/aura.di.scan.json') // reference the correct path here
 ];
 
 $di = $builder->newCompiledInstance($config_classes);
+```
+
+During development, you will have to rescan if you have annotated classes with attributes that modify the 
+container. Also, if you have dependencies with those attributes, you probably want to attach 
+[a 'post-install-cmd' and/or a 'post-update-cmd'](https://getcomposer.org/doc/articles/scripts.md#command-events)
+script to your composer.json.
+
+```json
+{
+    "scripts": {
+        "post-install-cmd": "vendor/bin/auradi scan --force",
+        "post-update-cmd": "vendor/bin/auradi scan --force"
+    }
+}
 ```
 
 ## Compiled objects inside the container

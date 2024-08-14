@@ -190,7 +190,7 @@ class ContainerTest extends TestCase
         $callable = $this->container->lazyLazy(
             $this->container->lazyCallable([
                 $this->container->lazyNew('Aura\Di\Fake\FakeControllerClass', [
-                    'foo' => 'bar'
+                    'foo' => new FakeOtherClass()
                 ]),
                 'process'
             ])

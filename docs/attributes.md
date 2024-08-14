@@ -185,7 +185,7 @@ $di->params['Example']['foo'] = $di->lazyGetCall('config', 'get', 'alpha');
 ## Modify the Container using attributes
 
 Modifying the container with attributes requires building the container with the
-[`ClassScanner`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
+[`ClassScannerConfig`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
 passed directories for classes and annotations. Every class that is annotated with `#[AttributeConfigFor]`
 and implements `AttributeConfigInterface` can modify the container.
 
@@ -283,3 +283,53 @@ class SymfonyRouteAttributeConfig implements AttributeConfigInterface
     }
 }
 ```
+
+## Compiled Blueprints
+
+[Reflection](https://www.php.net/reflection) is used by the container to get information of the class, e.g. what
+parameters are used by the constructor. This information is used to create a class that in this package is called
+a `Blueprint`.
+
+When you annotate a constructor parameter with `#[Service]`, `#[Instance]`, `#[Value]` or with an attribute implementing
+`Aura\Di\Attribute\AnnotatedInjectInterface` then the class automatically gets the marker that it needs to compiled
+into a `Blueprint` when you call `newCompiledInstance`  method on the `ContainerBuilder`. This is also true that use
+the code method like `$container->params` and `$container->setters`.
+
+There might be classes however, that are not configured using attributes or code but need to be instantiated by the 
+container somewhere in your code anyhow. Take for instance the class below. This class does not have an injection 
+attribute like `#[Service]`, `#[Config]` or `#[Value]`, and there might not also be a `$di->params[]` call to configure 
+this class. So the class is unknown to the container.
+
+If you want to create a `Blueprint` for this class during container compilation, annotate it with `#[Blueprint]`.
+
+```php
+use Aura\Di\Attribute\Blueprint;
+
+#[Blueprint]
+class OrderController 
+{
+    public function __construct(private Connection $databaseConnection) 
+    {
+    }
+}
+```
+
+To prevent, many classes have to be annotated with the `#[Blueprint]` attribute, you can also use the
+`#[BlueprintNamespace]` attribute, typically annotated to be an `Application`, `Kernel` or `Plugin` class.
+
+```php
+namespace MyPlugin;
+
+use Aura\Di\Attribute\BlueprintNamespace;
+
+#[BlueprintNamespace(__NAMESPACE__ . '\\Controllers')]
+#[BlueprintNamespace(__NAMESPACE__ . '\\Command')]
+class Plugin {
+
+}
+```
+
+Typically, you should not compile all namespace in your application or plugin. That would be overkill, because there 
+are classes like entities, models and DTOs that are never being instantiated by the container.
+
+Working with compiled blueprints require using the [`ClassScannerConfig`](config.md#scan-for-classes-and-annotations).

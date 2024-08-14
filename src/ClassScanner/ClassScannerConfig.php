@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Aura\Di\ClassScanner;
 
+use Aura\Di\Attribute\AnnotatedInjectInterface;
 use Aura\Di\Attribute\AttributeConfigFor;
-use Aura\Di\Attribute\CompileNamespace;
+use Aura\Di\Attribute\Blueprint;
+use Aura\Di\Attribute\BlueprintNamespace;
 use Aura\Di\Container;
 use Aura\Di\ContainerConfigInterface;
 
@@ -36,23 +38,27 @@ class ClassScannerConfig implements ContainerConfigInterface
     {
         $classMap = $this->mapGenerator->generate();
 
-        $configuration = [];
-        $compileNamespaces = [];
+        $attributeConfigs = [
+            AnnotatedInjectInterface::class => AnnotatedInjectAttributeConfig::class,
+            Blueprint::class => BlueprintAttributeConfig::class,
+        ];
+
+        $blueprintNamespaces = [];
         foreach ($classMap->getAttributeSpecifications() as $specification) {
             $attribute = $specification->getAttributeInstance();
             $attributeConfigClass = $specification->getClassName();
             if ($attribute instanceof AttributeConfigFor && \is_a($attributeConfigClass, AttributeConfigInterface::class, true)) {
                 $configFor = $attribute->getClassName();
-                $configuration[$configFor] = $attributeConfigClass;
+                $attributeConfigs[$configFor] = $attributeConfigClass;
             }
 
-            if ($attribute instanceof CompileNamespace) {
-                $compileNamespaces[] = $attribute->getNamespace();
+            if ($attribute instanceof BlueprintNamespace) {
+                $blueprintNamespaces[] = $attribute->getNamespace();
             }
         }
 
         foreach ($classMap->getClasses() as $className) {
-            foreach ($compileNamespaces as $namespace) {
+            foreach ($blueprintNamespaces as $namespace) {
                 if (\str_starts_with($className, $namespace)) {
                     $di->params[$className] = $di->params[$className] ?? [];
                 }
@@ -60,12 +66,23 @@ class ClassScannerConfig implements ContainerConfigInterface
 
             foreach ($classMap->getAttributeSpecificationsFor($className) as $specification) {
                 $attribute = $specification->getAttributeInstance();
-                if (\array_key_exists($attribute::class, $configuration)) {
-                    $configuredBy = $configuration[$attribute::class];
+                if (\array_key_exists($attribute::class, $attributeConfigs)) {
+                    $configuredBy = $attributeConfigs[$attribute::class];
                     $configuredBy::define(
                         $di,
                         $specification,
                     );
+                }
+
+                $interfaces = \class_implements($attribute);
+                foreach ($interfaces as $interface) {
+                    if (\array_key_exists($interface, $attributeConfigs)) {
+                        $configuredBy = $attributeConfigs[$interface];
+                        $configuredBy::define(
+                            $di,
+                            $specification,
+                        );
+                    }
                 }
             }
         }

@@ -12,7 +12,9 @@ class FakeAllAttributes
 
     public function __construct(
         #[FakeAttribute(4)]
-        $parameter
+        $parameter,
+        #[FakeAttribute(4)]
+        public $promotedProperty
     ) {
     }
 
