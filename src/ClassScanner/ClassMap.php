@@ -75,7 +75,7 @@ final class ClassMap
         return \array_merge([], ...array_values($this->classesToAttributes));
     }
 
-    public function fileContainsAttributeClass(string $filename): bool
+    public function isAttributeClassFile(string $filename): bool
     {
         if (!\array_key_exists($filename, $this->filesToClass)) {
             return false;

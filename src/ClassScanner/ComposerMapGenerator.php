@@ -66,7 +66,7 @@ final class ComposerMapGenerator implements MapGeneratorInterface
         foreach ($updatedFiles as $index => $updatedFile) {
             if ($this->basePath !== '' && \str_starts_with($updatedFile, $this->basePath)) {
                 $updatedFiles[$index] = \substr($updatedFile, \strlen($this->basePath));
-                $shouldFullGenerate = $shouldFullGenerate || $classMap->fileContainsAttributeClass($updatedFiles[$index]);
+                $shouldFullGenerate = $shouldFullGenerate || $classMap->isAttributeClassFile($updatedFiles[$index]);
             }
         }
 
