@@ -216,7 +216,7 @@ vendor/bin/auradi scan --force
 ```
 
 Then add the `ClassScannerConfig` to your Container Config classes. This example will generate a container in which 
-the container was modified by using attributes and with compiled blueprints as explained above. 
+the container was modified by using attributes and with compiled blueprints as explained above.
 
 ```php
 use Aura\Di\ClassScanner\ClassScannerConfig;
@@ -226,7 +226,7 @@ $builder = new ContainerBuilder();
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    ClassScannerConfig::newScanner('vendor/aura.di.scan.json') // reference the correct path here
+    ClassScannerConfig::fromCacheFile('vendor/aura.di.scan.json') // reference the correct path here
 ];
 
 $di = $builder->newCompiledInstance($config_classes);

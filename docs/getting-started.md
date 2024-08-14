@@ -72,6 +72,8 @@ however, to add a package to your dependencies and run the `scan` command in the
 
 ```sh
 composer require composer/class-map-generator
+
+# generate vendor/aura.di.scan.json
 vendor/bin/auradi scan --force
 ``` 
 
@@ -85,7 +87,7 @@ $serializedContainerFile = '/var/compiled.ser';
 $config_classes = [
     new \MyApp\Config1,
     new \MyApp\Config2,
-    ClassScannerConfig::newScanner(__DIR__ . '/../../aura.di.scan.json') // reference the correct path here
+    ClassScannerConfig::fromCacheFile('vendor/aura.di.scan.json') // reference the correct path here
 ];
 
 if (file_exists($serializedContainerFile)) {

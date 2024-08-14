@@ -97,7 +97,7 @@ class ClassScannerConfig implements ContainerConfigInterface
      *
      * @return self
      */
-    public static function newScanner(string $classMapFile): self
+    public static function fromCacheFile(string $classMapFile): self
     {
         return new self(new StaticFileGenerator($classMapFile));
     }
