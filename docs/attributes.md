@@ -182,9 +182,15 @@ $di->set('config', new ConfigBag(['foo' => 'bar', 'alpha' => 'bravo']));
 $di->params['Example']['foo'] = $di->lazyGetCall('config', 'get', 'alpha');
 ```
 
-## Modify the Container using attributes
+## Configure the Container using attributes
 
-Modifying the container with attributes requires building the container with the
+The above annotations for injecting the right parameters into a class work out-of-the-box when working with the 
+container. But there might be occasions that you want to an annotation to change the configuration of the container.
+
+Examples are a `#[Route('GET', '/order/{id}')]` attribute that adds a route to your routes, or a 
+`#[ListenFor(OrderWasPlaced::class)]` annotation that adds a listener to your event manager.
+
+Configuring the container with attributes requires building the container with the
 [`ClassScannerConfig`](config.md#scan-for-classes-and-annotations). When done so, the builder will scan the
 passed directories for classes and annotations. Every class that is annotated with `#[AttributeConfigFor]`
 and implements `AttributeConfigInterface` can modify the container.
@@ -212,18 +218,16 @@ class Route implements AttributeConfigInterface {
         if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
             /** @var self $attribute */
             $attribute = $specification->getAttributeInstance();
-            // considering the routes key is a lazy array, defined like this
-            // $resolver->values['routes'] = $container->lazyArray([]);
-            $di->values['routes']->append(
-                new RealRoute(
-                    $attribute->method, 
-                    $attribute->uri,
-                    $container->lazyLazy(
-                        $di->lazyCallable([
-                            $di->lazyNew($specification->getClassName()),
-                            $specification->getTargetConfig()['method']
-                        ])
-                    )
+            // considering the routes key is an array, defined like this
+            // $resolver->values['routes'] = [];
+            $di->values['routes'][] = new RealRoute(
+                $attribute->method, 
+                $attribute->uri,
+                $container->lazyLazy(
+                    $di->lazyCallable([
+                        $di->lazyNew($specification->getClassName()),
+                        $specification->getTargetConfig()['method']
+                    ])
                 )
             );
         }
