@@ -13,7 +13,7 @@ namespace Aura\Di\Attribute;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
-class CompileNamespace
+class BlueprintNamespace
 {
     private string $namespace;
 

@@ -10,7 +10,6 @@ class FakeConstructAttributeClass
 {
     private FakeInterface $fakeService;
     private FakeInvokableClass $fakeServiceGet;
-    private FakeInterface $fakeInstance;
     private string $string;
 
     public function __construct(
@@ -19,13 +18,12 @@ class FakeConstructAttributeClass
         #[Service('fake.service', 'getFoo')]
         FakeInvokableClass $fakeServiceGet,
         #[Instance(FakeInterfaceClass2::class)]
-        FakeInterface $fakeInstance,
+        private FakeInterface $fakeInstance,
         #[Value('fake.value')]
         string $string,
     ) {
         $this->fakeService = $fakeService;
         $this->fakeServiceGet = $fakeServiceGet;
-        $this->fakeInstance = $fakeInstance;
         $this->string = $string;
     }
 

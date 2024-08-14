@@ -2,6 +2,7 @@
 namespace Aura\Di\ClassScanner;
 
 use Aura\Di\Container;
+use Aura\Di\Fake\FakeControllerClass;
 use Aura\Di\Fake\FakeInjectAnnotatedWithClass;
 use Aura\Di\Resolver\Reflector;
 use Aura\Di\Resolver\Resolver;
@@ -37,5 +38,14 @@ class ClassScannerConfigTest extends TestCase
         $injectedWith = $container->newInstance(FakeInjectAnnotatedWithClass::class);
         $this->assertCount(1, $injectedWith->getWorkers());
         $this->assertSame($annotation, $injectedWith->getWorkers()[0]);
+    }
+
+    public function testBlueprintApplied()
+    {
+        $resolver = new Resolver(new Reflector());
+        $container = new Container($resolver);
+        $this->config->define($container);
+
+        $this->assertTrue(\array_key_exists(FakeControllerClass::class, $resolver->params));
     }
 }
