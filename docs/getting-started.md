@@ -53,8 +53,8 @@ $di = $builder->newInstance();
 
 The most straightforward way is to create an object through the _Container_ is via the `newInstance()` method:
 
-```
-$object = $di->newInstance('Vendor\Package\ClassName');
+```php
+$object = $di->newInstance(Vendor\Package\ClassName::class);
 ```
 
 > N.b.: The _Container_ locks itself once a new instance is produced; this ensures that the _Container_ configuration cannot be modified once objects have been created.
