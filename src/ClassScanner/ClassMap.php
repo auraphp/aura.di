@@ -49,11 +49,6 @@ final class ClassMap
         return \array_keys($this->classesToAttributes);
     }
 
-    public function getFileToClassMap(): array
-    {
-        return $this->filesToClass;
-    }
-
     public function getFiles(): array
     {
         return \array_keys($this->filesToClass);
