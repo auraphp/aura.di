@@ -226,7 +226,7 @@ class Route implements AttributeConfigInterface {
                 $container->lazyLazy(
                     $di->lazyCallable([
                         $di->lazyNew($specification->getClassName()),
-                        $specification->getTargetConfig()['method']
+                        $specification->getTargetMethod()
                     ])
                 )
             );
@@ -273,7 +273,7 @@ class SymfonyRouteAttributeConfig implements AttributeConfigInterface
             
             $invokableRoute = $di->lazyCallable([
                 $container->lazyNew($annotatedClassName),
-                $specification->getTargetConfig()['method']
+                $specification->getTargetMethod()
             ]);
             
             // these are not real parameters, but just examples

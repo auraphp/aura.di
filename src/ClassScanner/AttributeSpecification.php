@@ -9,8 +9,14 @@ final class AttributeSpecification
     private object $attributeInstance;
     private string $className;
     private int $attributeTarget;
+    /**
+     * @param array{method?: string, parameter?: string, property?: string, constant?: string} $targetConfig
+     */
     private array $targetConfig;
 
+    /**
+     * @param array{method?: string, parameter?: string, property?: string, constant?: string} $targetConfig
+     */
     public function __construct(
         object $attributeInstance,
         string $className,
@@ -39,8 +45,23 @@ final class AttributeSpecification
         return $this->attributeTarget;
     }
 
-    public function getTargetConfig(): array
+    public function getTargetMethod(): ?string
     {
-        return $this->targetConfig;
+        return $this->targetConfig['method'] ?? null;
+    }
+
+    public function getTargetParameter(): ?string
+    {
+        return $this->targetConfig['parameter'] ?? null;
+    }
+
+    public function getTargetProperty(): ?string
+    {
+        return $this->targetConfig['property'] ?? null;
+    }
+
+    public function getTargetConstant(): ?string
+    {
+        return $this->targetConfig['constant'] ?? null;
     }
 }

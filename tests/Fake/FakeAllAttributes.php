@@ -1,25 +1,28 @@
 <?php
 namespace Aura\Di\Fake;
 
-#[FakeAttribute(1)]
+#[FakeAttribute(\Attribute::TARGET_CLASS)]
 class FakeAllAttributes
 {
-    #[FakeAttribute(2)]
+    #[FakeAttribute(\Attribute::TARGET_PROPERTY)]
     public int $property;
 
-    #[FakeAttribute(3)]
+    #[FakeAttribute(\Attribute::TARGET_CLASS_CONSTANT)]
     public const CONSTANT = 1;
 
     public function __construct(
-        #[FakeAttribute(4)]
+        #[FakeAttribute(\Attribute::TARGET_PARAMETER)]
         $parameter,
-        #[FakeAttribute(4)]
+        #[FakeAttribute(\Attribute::TARGET_PARAMETER + \Attribute::TARGET_PROPERTY)]
         public $promotedProperty
     ) {
     }
 
-    #[FakeAttribute(5)]
-    public function method()
+    #[FakeAttribute(\Attribute::TARGET_METHOD)]
+    public function method(
+        #[FakeAttribute(\Attribute::TARGET_PARAMETER)]
+        $methodParameters
+    )
     {
     }
 }
