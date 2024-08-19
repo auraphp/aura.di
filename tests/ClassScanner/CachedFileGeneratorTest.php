@@ -51,7 +51,7 @@ class CachedFileGeneratorTest extends TestCase
 
         $classMap2 = $cachedFileModificationGenerator->update($classMap, [$newFile]);
         $this->assertContains($newClassName, $classMap2->getClasses());
-        $this->assertCount(1, $classMap2->getAttributeSpecificationsFor($newClassName));
+        $this->assertCount(1, $classMap2->getClassSpecificationFor($newClassName)->getAttributes());
     }
 
     public function testRemovingClass()

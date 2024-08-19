@@ -6,6 +6,7 @@ namespace Aura\Di\ClassScanner;
 
 final class AttributeSpecification
 {
+    private const CONSTRUCTOR_NAME = '__construct';
     private object $attributeInstance;
     private string $className;
     private int $attributeTarget;
@@ -63,5 +64,35 @@ final class AttributeSpecification
     public function getTargetConstant(): ?string
     {
         return $this->targetConfig['constant'] ?? null;
+    }
+
+    public function isConstructorParameterAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_PARAMETER && ($this->targetConfig['method'] ?? '') === self::CONSTRUCTOR_NAME;
+    }
+
+    public function isMethodAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_METHOD;
+    }
+
+    public function isClassAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_CLASS;
+    }
+
+    public function isParameterAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_PARAMETER;
+    }
+
+    public function isPropertyAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_PROPERTY;
+    }
+
+    public function isClassConstantAttribute(): bool
+    {
+        return $this->attributeTarget === \Attribute::TARGET_CLASS_CONSTANT;
     }
 }

@@ -64,13 +64,15 @@ class ClassScannerConfig implements ContainerConfigInterface
                 }
             }
 
-            foreach ($classMap->getAttributeSpecificationsFor($className) as $specification) {
+            $classSpecification = $classMap->getClassSpecificationFor($className);
+            foreach ($classSpecification->getAttributes() as $specification) {
                 $attribute = $specification->getAttributeInstance();
                 if (\array_key_exists($attribute::class, $attributeConfigs)) {
                     $configuredBy = $attributeConfigs[$attribute::class];
                     $configuredBy::define(
                         $di,
                         $specification,
+                        $classSpecification
                     );
                 }
 
@@ -81,6 +83,7 @@ class ClassScannerConfig implements ContainerConfigInterface
                         $configuredBy::define(
                             $di,
                             $specification,
+                            $classSpecification
                         );
                     }
                 }

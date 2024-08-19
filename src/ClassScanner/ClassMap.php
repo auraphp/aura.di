@@ -11,7 +11,7 @@ final class ClassMap
     private array $scanPaths;
     /** @var array<string, class-string> */
     private array $filesToClass = [];
-    /** @var array<class-string, array<int, AttributeSpecification>> */
+    /** @var array<class-string, ClassSpecification> */
     private array $classesToAttributes = [];
 
     /**
@@ -23,13 +23,10 @@ final class ClassMap
         $this->basePath = $basePath;
     }
 
-    /**
-     * @param array<int, AttributeSpecification> $attributeSpecifications
-     */
-    public function addClass(string $class, string $filename, array $attributeSpecifications): void
+    public function addClass(ClassSpecification $classSpecification): void
     {
-        $this->filesToClass[$filename] = $class;
-        $this->classesToAttributes[$class] = $attributeSpecifications;
+        $this->filesToClass[$classSpecification->getFilename()] = $classSpecification->getClassName();
+        $this->classesToAttributes[$classSpecification->getClassName()] = $classSpecification;
     }
 
     public function remove(string $filename): void
@@ -54,12 +51,13 @@ final class ClassMap
         return \array_keys($this->filesToClass);
     }
 
-    /**
-     * @return array<int, AttributeSpecification>
-     */
-    public function getAttributeSpecificationsFor(string $className): array
+    public function getClassSpecificationFor(string $className): ?ClassSpecification
     {
-        return $this->classesToAttributes[$className] ?? [];
+        if (\array_key_exists($className, $this->classesToAttributes)) {
+            return $this->classesToAttributes[$className];
+        }
+
+        throw new \InvalidArgumentException('Cannot find class specification for: ' . $className);
     }
 
     /**
@@ -67,7 +65,13 @@ final class ClassMap
      */
     public function getAttributeSpecifications(): array
     {
-        return \array_merge([], ...array_values($this->classesToAttributes));
+        return \array_merge(
+            [],
+            ...\array_values(array_map(
+                fn (ClassSpecification $classSpecification) => $classSpecification->getAttributes(),
+                $this->classesToAttributes
+            ))
+        );
     }
 
     public function isAttributeClassFile(string $filename): bool
@@ -81,14 +85,8 @@ final class ClassMap
             return false;
         }
 
-        $attributeSpecifications = $this->classesToAttributes[$class];
-        foreach ($attributeSpecifications as $specification) {
-            if ($specification->getAttributeInstance() instanceof \Attribute) {
-                return true;
-            }
-        }
 
-        return false;
+        return $this->classesToAttributes[$class]->isAttributeClass();
     }
 
     public function merge(ClassMap $other): ClassMap
@@ -110,7 +108,7 @@ final class ClassMap
         foreach ($this->filesToClass as $filename => $className) {
             $classMapJson['files'][$filename] = $className;
 
-            if ($attributeSpecifications = $this->getAttributeSpecificationsFor($className)) {
+            if ($attributeSpecifications = $this->getClassSpecificationFor($className)->getAttributes()) {
                 $classMapJson['attributes'][$className] = \array_map(
                     fn (AttributeSpecification $attribute) => \serialize($attribute),
                     $attributeSpecifications
@@ -143,11 +141,13 @@ final class ClassMap
 
         foreach ($cacheContentsJson['files'] as $filename => $className) {
             $classMap->addClass(
-                $className,
-                $filename,
-                \array_map(
-                    fn (string $serializedAttributeSpecification) => \unserialize($serializedAttributeSpecification),
-                    $cacheContentsJson['attributes'][$className] ?? []
+                new ClassSpecification(
+                    $className,
+                    $filename,
+                    \array_map(
+                        fn (string $serializedAttributeSpecification) => \unserialize($serializedAttributeSpecification),
+                        $cacheContentsJson['attributes'][$className] ?? []
+                    )
                 )
             );
         }

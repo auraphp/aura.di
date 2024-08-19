@@ -51,9 +51,11 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             }
 
             $classMap->addClass(
-                $class,
-                $path,
-                [...$this->reflector->yieldAttributes($class)]
+                new ClassSpecification(
+                    $class,
+                    $path,
+                    [...$this->reflector->yieldAttributes($class)]
+                )
             );
         }
 

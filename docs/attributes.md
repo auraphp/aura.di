@@ -205,6 +205,7 @@ will cause a `RealRoute` to be appended in the routes array.
 use Aura\Di\Attribute\AttributeConfigFor;
 use Aura\Di\ClassScanner\AttributeConfigInterface;
 use Aura\Di\ClassScanner\AttributeSpecification;
+use Aura\Di\ClassScanner\ClassSpecification;
 use Aura\Di\Container;
 
 #[\Attribute]
@@ -213,7 +214,7 @@ class Route implements AttributeConfigInterface {
     public function __construct(private string $method, private string $uri) {
     }
     
-    public static function define(Container $di, AttributeSpecification $specification): void
+    public static function define(Container $di, AttributeSpecification $specification, ClassSpecification $classSpecification): void
     {
         if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
             /** @var self $attribute */
@@ -259,15 +260,16 @@ you can create an implementation of `AttributeConfigInterface` yourself, and ann
 use Aura\Di\Attribute\AttributeConfigFor;
 use Aura\Di\ClassScanner\AttributeConfigInterface;
 use Aura\Di\ClassScanner\AttributeSpecification;
+use Aura\Di\ClassScanner\ClassSpecification;
 use Aura\Di\Container;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AttributeConfigFor(Route::class)]
 class SymfonyRouteAttributeConfig implements AttributeConfigInterface
 {
-    public static function define(Container $di, AttributeSpecification $specification): void
+    public static function define(Container $di, AttributeSpecification $specification, ClassSpecification $classSpecification): void
     {
-        if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
+        if ($specification->isMethodAttribute()) {
             /** @var Route $attribute */
             $attribute = $specification->getAttributeInstance();
             

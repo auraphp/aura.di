@@ -14,8 +14,12 @@ use Aura\Di\Container;
 
 final class BlueprintAttributeConfig implements AttributeConfigInterface
 {
-    public static function define(Container $di, AttributeSpecification $specification): void
+    public static function define(
+        Container $di,
+        AttributeSpecification $attributeSpecification,
+        ClassSpecification $classSpecification
+    ): void
     {
-        $di->params[$specification->getClassName()] = $di->params[$specification->getClassName()] ?? [];
+        $di->params[$attributeSpecification->getClassName()] = $di->params[$attributeSpecification->getClassName()] ?? [];
     }
 }
