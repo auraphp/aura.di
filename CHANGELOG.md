@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+- (ADD) ClassSpecification that collects all attribute specifications of a class
+- (CHG) Use `#[Blueprint]` and `#[BlueprintNamespace]` to mark classes namespaces to be compiled into blueprints.
+- (CHG) AttributeConfigInterface now also receives the class specification.
+
 ## 5.0.0-alpha.2
 
 - (ADD) $container->lazyLazy() to create a callable from a LazyInterface that is directly invokable. 
