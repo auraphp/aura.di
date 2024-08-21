@@ -15,12 +15,12 @@ use Aura\Di\Container;
 
 final class AnnotatedInjectAttributeConfig implements AttributeConfigInterface
 {
-    public static function define(Container $di, AttributeSpecification $specification): void
+    public static function define(Container $di, AttributeSpecification $attribute, ClassSpecification $class): void
     {
-        /** @var AnnotatedInjectInterface $attribute */
-        $attribute = $specification->getAttributeInstance();
-        if ($specification->getAttributeTarget() === \Attribute::TARGET_PARAMETER) {
-            $di->params[$specification->getClassName()][$specification->getTargetConfig()['parameter']] = $attribute->inject();
+        if ($attribute->isConstructorParameterAttribute()) {
+            /** @var AnnotatedInjectInterface $annotatedInject */
+            $annotatedInject = $attribute->getAttributeInstance();
+            $di->params[$attribute->getClassName()][$attribute->getTargetParameter()] = $annotatedInject->inject();
         }
     }
 }

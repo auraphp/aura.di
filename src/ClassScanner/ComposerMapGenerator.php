@@ -51,9 +51,11 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             }
 
             $classMap->addClass(
-                $class,
-                $path,
-                [...$this->reflector->yieldAttributes($class)]
+                new ClassSpecification(
+                    $class,
+                    $path,
+                    [...$this->reflector->yieldAttributes($class)]
+                )
             );
         }
 
@@ -77,7 +79,6 @@ final class ComposerMapGenerator implements MapGeneratorInterface
         $deleted = [];
         $skip = [];
 
-        $generator = new ClassMapGenerator();
         foreach ($classMap->getFiles() as $file) {
             if (!\in_array($file, $updatedFiles, true)) {
                 $skip[$file] = true;
@@ -92,6 +93,8 @@ final class ComposerMapGenerator implements MapGeneratorInterface
 
         $fileList = new FileList();
         $fileList->files = $skip;
+
+        $generator = new ClassMapGenerator();
         $generator->avoidDuplicateScans($fileList);
 
         foreach ($this->paths as $path) {

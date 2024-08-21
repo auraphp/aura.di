@@ -14,5 +14,5 @@ use Aura\Di\Container;
 
 interface AttributeConfigInterface
 {
-    public static function define(Container $di, AttributeSpecification $specification): void;
+    public static function define(Container $di, AttributeSpecification $attribute, ClassSpecification $class): void;
 }

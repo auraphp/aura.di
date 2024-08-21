@@ -6,7 +6,7 @@ namespace Aura\Di\ClassScanner;
 
 use PHPUnit\Framework\TestCase;
 
-class CachedFileGeneratorTest extends TestCase
+class ComposerMapGeneratorTest extends TestCase
 {
     private string $dir;
 
@@ -31,51 +31,38 @@ class CachedFileGeneratorTest extends TestCase
 
     public function testAddingClass()
     {
-        $cacheFile = $this->dir . '/cache_class_map.json';
-
-        $cachedFileModificationGenerator = new CachedFileGenerator(
-            new ComposerMapGenerator([
-                __DIR__ . '/../Fake',
-                $this->dir
-            ]),
-            $cacheFile,
-        );
+        $generator = new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir]);
 
         $classSuffix = \bin2hex(\random_bytes(4));
         $newClassName = 'CacheTest\\NewFile' . $classSuffix;
 
-        $classMap = $cachedFileModificationGenerator->generate();
+        $classMap = $generator->generate();
         $this->assertNotContains($newClassName, $classMap->getClasses());
 
         $newFile = $this->createRandomClassFile($newClassName);
 
-        $classMap2 = $cachedFileModificationGenerator->update($classMap, [$newFile]);
+        $classMap2 = $generator->update($classMap, [$newFile]);
         $this->assertContains($newClassName, $classMap2->getClasses());
         $this->assertCount(1, $classMap2->getClassSpecificationFor($newClassName)->getAttributes());
     }
 
     public function testRemovingClass()
     {
-        $cacheFile = $this->dir . '/cache_class_map.json';
-
-        $cachedFileModificationGenerator = new CachedFileGenerator(
-            new ComposerMapGenerator([
-                __DIR__ . '/../Fake',
-                $this->dir
-            ]),
-            $cacheFile,
-        );
+        $generator = new ComposerMapGenerator([
+            __DIR__ . '/../Fake',
+            $this->dir
+        ]);
 
         $classSuffix = \bin2hex(\random_bytes(4));
         $newClassName = 'CacheTest\\NewFile' . $classSuffix;
         $this->createRandomClassFile($newClassName);
 
-        $classMap = $cachedFileModificationGenerator->generate();
+        $classMap = $generator->generate();
         $this->assertContains($newClassName, $classMap->getClasses());
 
         \unlink($this->dir . '/NewFile' . $classSuffix . '.php');
 
-        $classMap2 = $cachedFileModificationGenerator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
+        $classMap2 = $generator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
         $this->assertNotContains($newClassName, $classMap2->getClasses());
     }
 
