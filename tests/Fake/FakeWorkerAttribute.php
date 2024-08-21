@@ -13,6 +13,8 @@ use Aura\Di\Container;
 #[BlueprintNamespace(__NAMESPACE__)]
 class FakeWorkerAttribute implements AttributeConfigInterface
 {
+    public const FILE = __FILE__;
+
     private int $someSetting;
 
     public function __construct(int $someSetting = 1)

@@ -10,6 +10,8 @@ class FakeAllAttributes
     #[FakeAttribute(\Attribute::TARGET_CLASS_CONSTANT)]
     public const CONSTANT = 1;
 
+    public const FILE = __FILE__;
+
     public function __construct(
         #[FakeAttribute(\Attribute::TARGET_PARAMETER)]
         $parameter,

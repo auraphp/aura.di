@@ -134,8 +134,16 @@ final class ClassMap
      */
     public static function fromFileHandle($fileHandle): ClassMap
     {
+        \fseek($fileHandle, 0);
         $cacheContents = \stream_get_contents($fileHandle);
+        if ($cacheContents === '') {
+            throw new \InvalidArgumentException('Cannot read empty file handle');
+        }
+
         $cacheContentsJson = \json_decode($cacheContents, true, 512, \JSON_THROW_ON_ERROR);
+        if (!$cacheContentsJson) {
+            throw new \InvalidArgumentException('Cannot parse json from file handle');
+        }
 
         $classMap = new ClassMap($cacheContentsJson['scanPaths'], $cacheContentsJson['basePath']);
 
