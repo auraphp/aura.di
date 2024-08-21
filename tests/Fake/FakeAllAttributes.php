@@ -23,7 +23,7 @@ class FakeAllAttributes
     #[FakeAttribute(\Attribute::TARGET_METHOD)]
     public function method(
         #[FakeAttribute(\Attribute::TARGET_PARAMETER)]
-        $methodParameters
+        $methodParameter
     )
     {
     }

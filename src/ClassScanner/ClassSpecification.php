@@ -70,15 +70,18 @@ final class ClassSpecification
     }
 
     /**
-     * @return array<int, AttributeSpecification>
+     * @return array<string, AttributeSpecification>
      */
     public function getParameterAttributesForMethod(string $methodName): array
     {
-        return \array_filter(
-            $this->attributes,
-            function (AttributeSpecification $specification) use ($methodName) {
-                return $specification->getTargetMethod() === $methodName;
+        $result = [];
+
+        foreach ($this->attributes as $specification) {
+            if ($specification->getTargetMethod() === $methodName && $param = $specification->getTargetParameter()) {
+                $result[$param] = $specification;
             }
-        );
+        }
+
+        return $result;
     }
 }
