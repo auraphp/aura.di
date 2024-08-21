@@ -20,19 +20,15 @@ class FakeWorkerAttribute implements AttributeConfigInterface
         $this->someSetting = $someSetting;
     }
 
-    public static function define(
-        Container $di,
-        AttributeSpecification $attributeSpecification,
-        ClassSpecification $classSpecification
-    ): void
+    public static function define(Container $di, AttributeSpecification $attribute, ClassSpecification $class): void
     {
-        /** @var self $attribute */
-        $attribute = $attributeSpecification->getAttributeInstance();
-        if ($attributeSpecification->getAttributeTarget() === \Attribute::TARGET_CLASS) {
+        /** @var self $instance */
+        $instance = $attribute->getAttributeInstance();
+        if ($attribute->getAttributeTarget() === \Attribute::TARGET_CLASS) {
             $di->values['worker'] = $di->values['worker'] ?? [];
             $di->values['worker'][] = [
-                'someSetting' => $attribute->someSetting,
-                'className' => $attributeSpecification->getClassName(),
+                'someSetting' => $instance->someSetting,
+                'className' => $attribute->getClassName(),
             ];
         }
     }
