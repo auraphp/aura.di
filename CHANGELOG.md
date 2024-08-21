@@ -3,7 +3,7 @@
 ## 5.0.0-rc.1
 
 - (ADD) ClassSpecification that collects all attribute specifications of a class
-- (CHG) Use `#[Blueprint]` and `#[BlueprintNamespace]` to mark classes namespaces to be compiled into blueprints.
+- (CHG) Use `#[Blueprint]` and `#[BlueprintNamespace]` to mark classes and namespaces to be compiled into blueprints.
 - (CHG) AttributeConfigInterface now also receives the class specification.
 
 ## 5.0.0-alpha.2
