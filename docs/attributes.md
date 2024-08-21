@@ -214,20 +214,20 @@ class Route implements AttributeConfigInterface {
     public function __construct(private string $method, private string $uri) {
     }
     
-    public static function define(Container $di, AttributeSpecification $specification, ClassSpecification $classSpecification): void
+    public static function define(Container $di, AttributeSpecification $attribute, ClassSpecification $class): void
     {
-        if ($specification->getAttributeTarget() === \Attribute::TARGET_METHOD) {
-            /** @var self $attribute */
-            $attribute = $specification->getAttributeInstance();
+        if ($attribute->getAttributeTarget() === \Attribute::TARGET_METHOD) {
+            /** @var self $route */
+            $route = $specification->getAttributeInstance();
             // considering the routes key is an array, defined like this
             // $resolver->values['routes'] = [];
             $di->values['routes'][] = new RealRoute(
-                $attribute->method, 
-                $attribute->uri,
+                $route->method, 
+                $route->uri,
                 $container->lazyLazy(
                     $di->lazyCallable([
-                        $di->lazyNew($specification->getClassName()),
-                        $specification->getTargetMethod()
+                        $di->lazyNew($attribute->getClassName()),
+                        $attribute->getTargetMethod()
                     ])
                 )
             );
@@ -267,22 +267,22 @@ use Symfony\Component\Routing\Attribute\Route;
 #[AttributeConfigFor(Route::class)]
 class SymfonyRouteAttributeConfig implements AttributeConfigInterface
 {
-    public static function define(Container $di, AttributeSpecification $specification, ClassSpecification $classSpecification): void
+    public static function define(Container $di, AttributeSpecification $attribute, ClassSpecification $class): void
     {
-        if ($specification->isMethodAttribute()) {
-            /** @var Route $attribute */
-            $attribute = $specification->getAttributeInstance();
+        if ($attribute->isMethodAttribute()) {
+            /** @var Route $route */
+            $route = $attribute->getAttributeInstance();
             
             $invokableRoute = $di->lazyCallable([
                 $container->lazyNew($annotatedClassName),
-                $specification->getTargetMethod()
+                $attribute->getTargetMethod()
             ]);
             
             // these are not real parameters, but just examples
             $di->values['routes'][] = new Symfony\Component\Routing\Route(
-                $attribute->getPath(),
-                $attribute->getMethods(),
-                $attribute->getName(),
+                $route->getPath(),
+                $route->getMethods(),
+                $route->getName(),
                 $invokableRoute
             );
         }
