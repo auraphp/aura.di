@@ -292,14 +292,14 @@ class SymfonyRouteAttributeConfig implements AttributeConfigInterface
 
 ## Compiled Blueprints
 
-[Reflection](https://www.php.net/reflection) is used by the container to get information of the class, e.g. what
+[Reflection](https://www.php.net/reflection) is used by the container to get information of classes, e.g. what
 parameters are used by the constructor. This information is used to create a class that in this package is called
 a `Blueprint`.
 
 When you annotate a constructor parameter with `#[Service]`, `#[Instance]`, `#[Value]` or with an attribute implementing
 `Aura\Di\Attribute\AnnotatedInjectInterface` then the class automatically gets the marker that it needs to compiled
-into a `Blueprint` when you call `newCompiledInstance`  method on the `ContainerBuilder`. This is also true that use
-the code method like `$container->params` and `$container->setters`.
+into a `Blueprint` when you call `newCompiledInstance`  method on the `ContainerBuilder`. This also applies to using
+code like `$container->params` and `$container->setters` for configuring your container.
 
 There might be classes however, that are not configured using attributes or code but need to be instantiated by the 
 container somewhere in your code anyhow. Take for instance the class below. This class does not have an injection 
@@ -321,7 +321,7 @@ class OrderController
 ```
 
 To prevent, many classes have to be annotated with the `#[Blueprint]` attribute, you can also use the
-`#[BlueprintNamespace]` attribute, typically annotated to be an `Application`, `Kernel` or `Plugin` class.
+`#[BlueprintNamespace]` attribute, typically annotated to an `Application`, `Kernel` or `Plugin` class.
 
 ```php
 namespace MyPlugin;
@@ -335,7 +335,7 @@ class Plugin {
 }
 ```
 
-Typically, you should not compile all namespace in your application or plugin. That would be overkill, because there 
+You should not compile all namespace in your application or plugin. That would be overkill, because there 
 are classes like entities, models and DTOs that are never being instantiated by the container.
 
 Working with compiled blueprints require using the [`ClassScannerConfig`](config.md#scan-for-classes-and-annotations).
