@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 5.0.0-rc.1
+## 5.0.0
 
 - (ADD) ClassSpecification that collects all attribute specifications of a class
 - (CHG) Use `#[Blueprint]` and `#[BlueprintNamespace]` to mark classes and namespaces to be compiled into blueprints.
