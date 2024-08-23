@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace Aura\Di\Resolver;
 
 use Aura\Di\ClassScanner\AttributeSpecification;
+use Error;
+use Generator;
 use ReflectionClass;
 use ReflectionException;
 
@@ -149,10 +151,15 @@ class Reflector
 
     /**
      * @param string $className
-     * @return \Generator<int, AttributeSpecification>
+     *
+     * @return Generator<int, AttributeSpecification>
+     *
      * @throws ReflectionException
+     *
+     * @throws Error An error is thrown when a class contains references to nonexistent other class, e.g. extending
+     * a class from a package that is not available.
      */
-    public function yieldAttributes(string $className): \Generator
+    public function yieldAttributes(string $className): Generator
     {
         $reflectionClass = $this->getClass($className);
         foreach ($reflectionClass->getAttributes() as $attribute) {
@@ -223,7 +230,7 @@ class Reflector
         string $className,
         int $targetMethod,
         array $targetConfig = []
-    ): \Generator
+    ): Generator
     {
         $instance = $attribute->newInstance();
         yield new AttributeSpecification(
