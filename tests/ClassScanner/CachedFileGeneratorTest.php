@@ -34,10 +34,7 @@ class CachedFileGeneratorTest extends TestCase
         $cacheFile = $this->dir . '/cache_class_map.json';
 
         $cachedFileModificationGenerator = new CachedFileGenerator(
-            new ComposerMapGenerator([
-                __DIR__ . '/../Fake',
-                $this->dir
-            ]),
+            new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir),
             $cacheFile,
         );
 
@@ -59,10 +56,7 @@ class CachedFileGeneratorTest extends TestCase
         $cacheFile = $this->dir . '/cache_class_map.json';
 
         $cachedFileModificationGenerator = new CachedFileGenerator(
-            new ComposerMapGenerator([
-                __DIR__ . '/../Fake',
-                $this->dir
-            ]),
+            new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir),
             $cacheFile,
         );
 
@@ -77,6 +71,26 @@ class CachedFileGeneratorTest extends TestCase
 
         $classMap2 = $cachedFileModificationGenerator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
         $this->assertNotContains($newClassName, $classMap2->getClasses());
+    }
+
+    public function testUpdateClass()
+    {
+        $cacheFile = $this->dir . '/cache_class_map.json';
+
+        $cachedFileModificationGenerator = new CachedFileGenerator(
+            new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir),
+            $cacheFile,
+        );
+
+        $classSuffix = \bin2hex(\random_bytes(4));
+        $newClassName = 'CacheTest\\NewFile' . $classSuffix;
+        $this->createRandomClassFile($newClassName);
+
+        $classMap = $cachedFileModificationGenerator->generate();
+        $this->assertContains($newClassName, $classMap->getClasses());
+
+        $classMap2 = $cachedFileModificationGenerator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
+        $this->assertContains($newClassName, $classMap2->getClasses());
     }
 
     private function createRandomClassFile(string $className, int $value = 0): string

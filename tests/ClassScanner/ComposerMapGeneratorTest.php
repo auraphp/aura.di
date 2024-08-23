@@ -31,7 +31,7 @@ class ComposerMapGeneratorTest extends TestCase
 
     public function testAddingClass()
     {
-        $generator = new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir]);
+        $generator = new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir);
 
         $classSuffix = \bin2hex(\random_bytes(4));
         $newClassName = 'CacheTest\\NewFile' . $classSuffix;
@@ -48,10 +48,7 @@ class ComposerMapGeneratorTest extends TestCase
 
     public function testRemovingClass()
     {
-        $generator = new ComposerMapGenerator([
-            __DIR__ . '/../Fake',
-            $this->dir
-        ]);
+        $generator = new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir);
 
         $classSuffix = \bin2hex(\random_bytes(4));
         $newClassName = 'CacheTest\\NewFile' . $classSuffix;
@@ -64,6 +61,21 @@ class ComposerMapGeneratorTest extends TestCase
 
         $classMap2 = $generator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
         $this->assertNotContains($newClassName, $classMap2->getClasses());
+    }
+
+    public function testUpdateClass()
+    {
+        $generator = new ComposerMapGenerator([__DIR__ . '/../Fake', $this->dir], $this->dir);
+
+        $classSuffix = \bin2hex(\random_bytes(4));
+        $newClassName = 'CacheTest\\NewFile' . $classSuffix;
+        $this->createRandomClassFile($newClassName);
+
+        $classMap = $generator->generate();
+        $this->assertContains($newClassName, $classMap->getClasses());
+
+        $classMap2 = $generator->update($classMap, [$this->dir . '/NewFile' . $classSuffix . '.php']);
+        $this->assertContains($newClassName, $classMap2->getClasses());
     }
 
     private function createRandomClassFile(string $className, int $value = 0): string

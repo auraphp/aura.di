@@ -64,11 +64,21 @@ final class ComposerMapGenerator implements MapGeneratorInterface
 
     public function update(ClassMap $classMap, array $updatedFiles): ClassMap
     {
+        $deleted = [];
+        $skip = [];
+
         $shouldFullGenerate = false;
         foreach ($updatedFiles as $index => $updatedFile) {
             if ($this->basePath !== '' && \str_starts_with($updatedFile, $this->basePath)) {
-                $updatedFiles[$index] = \substr($updatedFile, \strlen($this->basePath));
-                $shouldFullGenerate = $shouldFullGenerate || $classMap->isAttributeClassFile($updatedFiles[$index]);
+                $checkFile = \substr($updatedFile, \strlen($this->basePath));
+
+                if (!\is_file($updatedFile)) {
+                    $deleted[] = $checkFile;
+                } else {
+                    $shouldFullGenerate = $shouldFullGenerate || $classMap->isAttributeClassFile($checkFile);
+                }
+
+                $updatedFiles[$index] = $checkFile;
             }
         }
 
@@ -76,18 +86,9 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             return $this->generate();
         }
 
-        $deleted = [];
-        $skip = [];
-
         foreach ($classMap->getFiles() as $file) {
             if (!\in_array($file, $updatedFiles, true)) {
-                $skip[$file] = true;
-            }
-        }
-
-        foreach ($updatedFiles as $file) {
-            if (!\is_file($file)) {
-                $deleted[] = $file;
+                $skip[$this->basePath . $file] = true;
             }
         }
 
@@ -101,9 +102,14 @@ final class ComposerMapGenerator implements MapGeneratorInterface
             $generator->scanPaths($path, $this->excluded);
         }
 
-        $classMap = $this->convertToClassMap(
-            new ClassMap($this->paths, $this->basePath),
-            $generator->getClassMap()->getMap()
+        $classMap = $classMap->merge(
+            $this->convertToClassMap(
+                new ClassMap(
+                    $this->paths,
+                    $this->basePath
+                ),
+                $generator->getClassMap()->getMap()
+            )
         );
 
         foreach ($deleted as $filename) {
