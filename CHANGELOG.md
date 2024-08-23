@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.3
+
+- (CHG) Fix deleting file when it exists
+
 ## 5.0.2
 
 - (CHG) Fix bug where updated files were incorrectly removed from the classmap.
