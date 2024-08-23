@@ -489,7 +489,9 @@ class Container implements ContainerInterface
      * Note the that container must be locked before creating a new instance.
      * This prevents premature resolution of params and setters.
      *
-     * @param string $class The class to instantiate.
+     * @phpstan-template T
+     *
+     * @param class-string<T> $class The class to instantiate.
      *
      * @param array $mergeParams An array of override parameters; the key may
      * be the name *or* the numeric position of the constructor parameter, and
@@ -499,7 +501,7 @@ class Container implements ContainerInterface
      * name of the setter method to call and the value is the value to be
      * passed to the setter method.
      *
-     * @return object
+     * @return object&T
      *
      */
     public function newInstance(

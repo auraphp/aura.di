@@ -2,6 +2,8 @@
 namespace Aura\Di\ClassScanner;
 
 use Aura\Di\Container;
+use Aura\Di\Fake\FakeCompilationTestConfig;
+use Aura\Di\Fake\FakeConstructAttributeClass;
 use Aura\Di\Fake\FakeControllerClass;
 use Aura\Di\Fake\FakeInjectAnnotatedWithClass;
 use Aura\Di\Resolver\Reflector;
@@ -32,7 +34,7 @@ class ClassScannerConfigTest extends TestCase
 
         $annotation = $container->values['worker'][0];
         $this->assertSame(3, $annotation['someSetting']);
-        $this->assertSame('Aura\Di\Fake\FakeConstructAttributeClass', $annotation['className']);
+        $this->assertSame(FakeConstructAttributeClass::class, $annotation['className']);
 
         /** @var FakeInjectAnnotatedWithClass $injectedWith */
         $injectedWith = $container->newInstance(FakeInjectAnnotatedWithClass::class);
@@ -47,5 +49,19 @@ class ClassScannerConfigTest extends TestCase
         $this->config->define($container);
 
         $this->assertTrue(\array_key_exists(FakeControllerClass::class, $resolver->params));
+    }
+
+    public function testOrder()
+    {
+        $resolver = new Resolver(new Reflector());
+        $container = new Container($resolver);
+        $container->params[FakeConstructAttributeClass::class]['string'] = 'this_value_should_override_the_attribute';
+
+        $testConfig = new FakeCompilationTestConfig();
+        $testConfig->define($container);
+        $this->config->define($container);
+
+        $instance = $container->newInstance(FakeConstructAttributeClass::class);
+        $this->assertSame('this_value_should_override_the_attribute', $instance->getString());
     }
 }
