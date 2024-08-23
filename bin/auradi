@@ -58,13 +58,14 @@ if ($command === 'scan') {
     echo 'Found ' . count($classMapPaths) . ' classmap paths' . PHP_EOL;
     echo PHP_EOL;
 
-    if (in_array('--force', $args, true)) {
-        unlink($currentCwd . '/vendor/aura.di.scan.json');
+    $resultFile = $currentCwd . '/vendor/aura.di.scan.json';
+    if (in_array('--force', $args, true) && is_file($resultFile)) {
+        unlink($resultFile);
     }
 
     $generator = new CachedFileGenerator(
         new ComposerMapGenerator($classMapPaths, $currentCwd),
-        $currentCwd . '/vendor/aura.di.scan.json',
+        $resultFile
     );
 
     echo 'Scanning paths for classes and annotations.' . PHP_EOL;
