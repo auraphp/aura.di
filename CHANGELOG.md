@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.2
+
+- (CHG) Fix bug where updated files were incorrectly removed from the classmap.
+
 ## 5.0.1
 
 - (CHG) AnnotatedInjectAttributeConfig should only mark for blueprint creation, fixes order of Blueprint creation bug.
