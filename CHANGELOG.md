@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.1
+
+- (CHG) AnnotatedInjectAttributeConfig should only mark for blueprint creation, fixes order of Blueprint creation bug.
+
 ## 5.0.0
 
 - (ADD) ClassSpecification that collects all attribute specifications of a class
