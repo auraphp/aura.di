@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.4
+
+- (CHG) Fix generating class map from classes that extend nonexisting classes.
+
 ## 5.0.3
 
 - (CHG) Fix deleting file when it exists
