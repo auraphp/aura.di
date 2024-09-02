@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.5
+
+- (CHG) AttributeConfigFor is now repeatable.
+
 ## 5.0.4
 
 - (CHG) Fix generating class map from classes that extend nonexisting classes.
