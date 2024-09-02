@@ -12,7 +12,7 @@ namespace Aura\Di\Attribute;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 class AttributeConfigFor
 {
     private string $className;
