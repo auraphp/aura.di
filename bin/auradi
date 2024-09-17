@@ -28,14 +28,8 @@ $args = $argv;
 $scriptDir = array_shift($args);
 $command = array_shift($args);
 
-if ($command === 'scan') {
-    if (!file_exists($currentCwd . '/vendor/composer/installed.json')) {
-        throw new RuntimeException('Could not include ./vendor/composer/installed.json in path ' . $currentCwd . '/vendor/composer/installed.json');
-    }
-
-    echo 'Using ./vendor/composer/installed.json to detect which paths to scan:' . PHP_EOL;
-
-    $installedJsonFile = $currentCwd . '/vendor/composer/installed.json';
+function extractJson(string $file): array {
+    $installedJsonFile = $file;
     $installedJsonContents = file_get_contents($installedJsonFile);
     if (!$installedJsonContents) {
         throw new RuntimeException('Could not read json from ./vendor/composer/installed.json');
@@ -46,6 +40,26 @@ if ($command === 'scan') {
         throw new RuntimeException('Could not parse json from ./vendor/composer/installed.json');
     }
 
+    return $installedJson;
+}
+
+if ($command === 'scan') {
+    $installedJsonFile = $currentCwd . '/vendor/composer/installed.json';
+    $composerJsonFile = $currentCwd . '/composer.json';
+
+    if (!file_exists($installedJsonFile)) {
+        throw new RuntimeException('Could not find ./vendor/composer/installed.json in path ' . $currentCwd);
+    }
+
+    if (!file_exists($composerJsonFile)) {
+        throw new RuntimeException('Could not find ./composer.json in path ' . $currentCwd);
+    }
+
+    echo 'Using ./composer.json and ./vendor/composer/installed.json to detect which paths to scan:' . PHP_EOL;
+
+    $installedJson = extractJson($installedJsonFile);
+    $composerJson = extractJson($composerJsonFile);
+
     $classMapPaths = [];
     foreach ($installedJson['packages'] as $package) {
         foreach (($package['extra']['aura/di']['classmap-paths'] ?? []) as $classMapPath) {
@@ -53,6 +67,12 @@ if ($command === 'scan') {
             $classMapPaths[] = $fullPath;
             echo '- ' . $fullPath . PHP_EOL;
         }
+    }
+
+    foreach (($composerJson['extra']['aura/di']['classmap-paths'] ?? []) as $classMapPath) {
+        $fullPath = realpath(dirname($composerJsonFile) . '/' . $classMapPath);
+        $classMapPaths[] = $fullPath;
+        echo '- ' . $fullPath . PHP_EOL;
     }
 
     echo 'Found ' . count($classMapPaths) . ' classmap paths' . PHP_EOL;
