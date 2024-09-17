@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 5.0.6
+
+- (CHG) Extract class iterator into own method inside ClassScannerConfig.
+- (ADD) Add hasClass method to ClassMap class.
+
 ## 5.0.5
 
 - (CHG) AttributeConfigFor is now repeatable.
