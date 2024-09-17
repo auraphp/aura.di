@@ -20,6 +20,8 @@ final class ClassMapTest extends TestCase
         $map = new ClassMap([], '/');
         $map->addClass($spec);
 
+        $this->assertTrue($map->hasClass(FakeAllAttributes::class));
+        $this->assertFalse($map->hasClass(FakeWorkerAttribute::class));
         $this->assertContains(FakeAllAttributes::class, $map->getClasses());
         $this->assertContains(FakeAllAttributes::FILE, $map->getFiles());
         $this->assertNotNull($map->getClassSpecificationFor(FakeAllAttributes::class));
@@ -72,6 +74,8 @@ final class ClassMapTest extends TestCase
 
         $map2 = ClassMap::fromFileHandle($stream);
 
+        $this->assertTrue($map2->hasClass(FakeAllAttributes::class));
+        $this->assertTrue($map2->hasClass(FakeWorkerAttribute::class));
         $this->assertContains(FakeAllAttributes::class, $map2->getClasses());
         $this->assertContains(FakeAllAttributes::FILE, $map2->getFiles());
         $this->assertContains(FakeWorkerAttribute::class, $map2->getClasses());

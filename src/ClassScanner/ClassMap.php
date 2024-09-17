@@ -29,6 +29,11 @@ final class ClassMap
         $this->classesToAttributes[$classSpecification->getClassName()] = $classSpecification;
     }
 
+    public function hasClass(string $className): bool
+    {
+        return \array_key_exists($className, $this->classesToAttributes);
+    }
+
     public function remove(string $filename): void
     {
         if (\array_key_exists($filename, $this->filesToClass)) {
