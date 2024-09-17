@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.7
+
+- (CHG) Classes that generate an error should not be part of the class map at all.
+
 ## 5.0.6
 
 - (CHG) Extract class iterator into own method inside ClassScannerConfig.
