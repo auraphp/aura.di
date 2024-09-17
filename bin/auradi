@@ -64,6 +64,10 @@ if ($command === 'scan') {
     foreach ($installedJson['packages'] as $package) {
         foreach (($package['extra']['aura/di']['classmap-paths'] ?? []) as $classMapPath) {
             $fullPath = realpath(dirname($installedJsonFile) . '/' . $package['install-path'] . '/' . $classMapPath);
+            if ($fullPath === false) {
+                continue;
+            }
+
             $classMapPaths[] = $fullPath;
             echo '- ' . $fullPath . PHP_EOL;
         }
@@ -71,6 +75,10 @@ if ($command === 'scan') {
 
     foreach (($composerJson['extra']['aura/di']['classmap-paths'] ?? []) as $classMapPath) {
         $fullPath = realpath(dirname($composerJsonFile) . '/' . $classMapPath);
+        if ($fullPath === false) {
+            continue;
+        }
+
         $classMapPaths[] = $fullPath;
         echo '- ' . $fullPath . PHP_EOL;
     }
