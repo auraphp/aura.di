@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0.8
+
+- (CHG) Missing scanning root package.
+
 ## 5.0.7
 
 - (CHG) Classes that generate an error should not be part of the class map at all.
