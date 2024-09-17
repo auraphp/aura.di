@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Aura\Di\ClassScanner;
 
+use Aura\Di\Fake\FakeAllAttributes;
+use Aura\Di\Fake\FakeClassExtendsNonExistent;
 use PHPUnit\Framework\TestCase;
 
 class ComposerMapGeneratorTest extends TestCase
@@ -37,6 +39,8 @@ class ComposerMapGeneratorTest extends TestCase
         $newClassName = 'CacheTest\\NewFile' . $classSuffix;
 
         $classMap = $generator->generate();
+        $this->assertTrue($classMap->hasClass(FakeAllAttributes::class));
+        $this->assertFalse($classMap->hasClass(FakeClassExtendsNonExistent::class));
         $this->assertNotContains($newClassName, $classMap->getClasses());
 
         $newFile = $this->createRandomClassFile($newClassName);
