@@ -57,7 +57,7 @@ class ClassScannerConfig implements ContainerConfigInterface
             }
         }
 
-        foreach ($classMap->getClasses() as $className) {
+        foreach ($this->newClassIterator($classMap) as $className) {
             foreach ($blueprintNamespaces as $namespace) {
                 if (\str_starts_with($className, $namespace)) {
                     $di->params[$className] = $di->params[$className] ?? [];
@@ -89,6 +89,14 @@ class ClassScannerConfig implements ContainerConfigInterface
                 }
             }
         }
+    }
+
+    /**
+     * @return \Iterator<int, class-string>
+     */
+    protected function newClassIterator(ClassMap $classMap): \Iterator
+    {
+        return new \ArrayIterator($classMap->getClasses());
     }
 
     public function modify(Container $di): void
